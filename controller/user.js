@@ -10,7 +10,6 @@ const startCommand = async (ctx) => {
   const referrerId = ctx.message.text.split(' ')[1] || null;
   const user = await User.findByPk(userId);
   const group = await Group.findOne({ where: { group_status: 1 } });
-  console.log(group.group_id);
   if (!user) {
     await User.create({
       user_id: userId,
@@ -41,9 +40,31 @@ const startCommand = async (ctx) => {
   await ctx.reply(
     'Choose an action:',
     Markup.inlineKeyboard([
-      [Markup.button.callback('Forward', 'forward')],
+      [
+        {
+          text: 'Forward this message',
+          switch_inline_query: `: ${referralLink}`,
+        },
+      ],
       [Markup.button.callback('Check', 'check')],
     ])
   );
 };
-module.exports = { startCommand };
+const handleCheck = async (ctx) => {
+  const userId = ctx.from.id;
+  const group = await Group.findOne({ where: { group_status: 1 } });
+  const count = await Count.findOne({
+    where: {
+      userId: userId,
+      groupId: group.group_id,
+    },
+  });
+  if (count.user_count < group.group_count) {
+    ctx.reply(
+      `Sizda qabul qilingan foydalanuvchilar yetarli emas. \n Bu guruh uchun qo'shilishi kerak bo'lgan jami foydalanuvchilar: ${group.group_count} \n Siz orqali qo'shilgan foydalanuvchilar: ${count.user_count}`
+    );
+  } else {
+    ctx.reply(group.group_link);
+  }
+};
+module.exports = { startCommand, handleCheck };
