@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  const groups = sequelize.define('groups', {
+  const groups = sequelize.define('cl_groups', {
     group_id: {
       type: DataTypes.BIGINT,
       primaryKey: true,
@@ -12,6 +12,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     group_count: {
       type: DataTypes.BIGINT,
+    },
+    group_status: {
+      type: DataTypes.BOOLEAN,
     },
   });
   return groups;

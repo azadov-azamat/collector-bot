@@ -31,11 +31,19 @@ db.users = users(sequelize, DataTypes);
 db.groups = groups(sequelize, DataTypes);
 db.counts = counts(sequelize, DataTypes);
 
-db.counts.belongsTo(db.users);
-db.counts.belongsTo(db.groups);
+db.counts.belongsTo(db.users, {
+  foreignKey: 'userId',
+});
+db.counts.belongsTo(db.groups, {
+  foreignKey: 'groupId',
+});
 
-db.groups.hasMany(db.counts);
-db.users.hasMany(db.counts);
+db.groups.hasMany(db.counts, {
+  foreignKey: 'groupId',
+});
+db.users.hasMany(db.counts, {
+  foreignKey: 'userId',
+});
 
 db.sequelize.sync({ force: false }).then(() => {
   console.log('yes re-sync done!');
