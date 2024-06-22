@@ -1,19 +1,16 @@
 module.exports = (sequelize, DataTypes) => {
-  const groups = sequelize.define('cl_groups', {
-    group_name: {
+  const channels = sequelize.define('cl_channels', {
+    channel_name: {
       type: DataTypes.STRING,
     },
-    group_link: {
+    channel_link: {
       type: DataTypes.STRING,
       unique: true,
     },
-    group_count: {
-      type: DataTypes.BIGINT,
-    },
-    group_status: {
+    channel_status: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
   });
-  return groups;
+  return channels;
 };

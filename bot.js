@@ -1,10 +1,7 @@
 const dotenv = require('dotenv');
 dotenv.config();
-const {
-  startCommand,handleCheck
-} = require('./controller/user');
+const { startCommand, handleCheck } = require('./controller/user');
 const { Telegraf } = require('telegraf');
-
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 

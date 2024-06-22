@@ -2,9 +2,12 @@ const db = require('./../model/index');
 const User = db.users;
 const Count = db.counts;
 const Group = db.groups;
+const Channel = db.channels;
 const { Markup } = require('telegraf');
+
 const startCommand = async (ctx) => {
   const userId = ctx.from.id;
+
   const userName = ctx.from.username;
   const referralLink = `https://t.me/${ctx.botInfo.username}?start=${userId}`;
   const referrerId = ctx.message.text.split(' ')[1] || null;
@@ -19,14 +22,14 @@ const startCommand = async (ctx) => {
     const count = await Count.findOne({
       where: {
         userId: referrerId,
-        groupId: group.group_id,
+        groupId: group.id,
       },
     });
     if (!count) {
       await Count.create({
         user_count: 1,
         userId: referrerId,
-        groupId: group.group_id,
+        groupId: group.id,
       });
     } else {
       count.user_count = count.user_count + 1;
@@ -37,12 +40,23 @@ const startCommand = async (ctx) => {
     ctx.reply(user.user_link);
   }
 
-  await ctx.reply(
-    'Choose an action:',
+  const channels = await Channel.findAll({ where: { channel_status: true } });
+  const buttons = channels.map((channel) => {
+    return [
+      Markup.button.url(
+        `Obuna bo'lish ${channel.channel_name}`,
+        `https://t.me/${channel.link.replace('@', '')}`
+      ),
+    ];
+  });
+
+  ctx.reply(
+    `Guruh linkini olish uchun quyidagi kanallarga a'zo bo'ling va sizga berilgan referal linkni ${group.group_count} do'stingizga ulashing:`,
     Markup.inlineKeyboard([
+      ...buttons,
       [
         {
-          text: 'Forward this message',
+          text: 'Forward referal link',
           switch_inline_query: `: ${referralLink}`,
         },
       ],
@@ -52,19 +66,74 @@ const startCommand = async (ctx) => {
 };
 const handleCheck = async (ctx) => {
   const userId = ctx.from.id;
+
+  // Find the active group
   const group = await Group.findOne({ where: { group_status: 1 } });
-  const count = await Count.findOne({
+
+  // Find all active channels
+  const channels = await Channel.findAll({
     where: {
-      userId: userId,
-      groupId: group.group_id,
+      channel_status: true,
     },
   });
-  if (count.user_count < group.group_count) {
-    ctx.reply(
-      `Sizda qabul qilingan foydalanuvchilar yetarli emas. \n Bu guruh uchun qo'shilishi kerak bo'lgan jami foydalanuvchilar: ${group.group_count} \n Siz orqali qo'shilgan foydalanuvchilar: ${count.user_count}`
-    );
-  } else {
-    ctx.reply(group.group_link);
+
+  // Find the user's referral count for the active group
+  let count = await Count.findOne({
+    where: {
+      userId: userId,
+      groupId: group?.id,
+    },
+  });
+
+  // Initialize count if it doesn't exist
+  if (!count) {
+    count = { user_count: 0 };
   }
+
+  // Initialize a string to hold the subscription status
+  let subscriptionStatus = '';
+
+  // Check subscription status for each channel
+  const channelUsernames = channels.map((channel) => channel.channel_link);
+  for (const channelUsername of channelUsernames) {
+    try {
+      // Check if the user is a member of the channel
+      const chatMember = await ctx.telegram.getChatMember(
+        channelUsername,
+        userId
+      );
+      if (
+        chatMember.status === 'member' ||
+        chatMember.status === 'administrator' ||
+        chatMember.status === 'creator'
+      ) {
+        subscriptionStatus += `You are subscribed to ${channelUsername}\n`;
+      } else {
+        subscriptionStatus += `You are not subscribed to ${channelUsername}\n`;
+      }
+    } catch (error) {
+      console.error('Error checking subscription status:', error);
+      // Handle error if necessary
+    }
+  }
+
+  // Construct the reply message with all the necessary details
+  let replyMessage = '';
+  if (count.user_count < group.group_count) {
+    replyMessage += `You need to refer ${group.group_count} friends to receive the group link.\n`;
+  } else {
+    if (subscriptionStatus.includes('not subscribed')) {
+      replyMessage += `You have referred ${count.user_count} friends, but you need to subscribe to all channels to receive the group link.\n`;
+    } else {
+      replyMessage += `You have referred ${count.user_count} friends and subscribed to all channels. Here is the group link: ${group.group_link}\n`;
+    }
+  }
+
+  replyMessage += `Total required users for this group: ${group.group_count}\n`;
+  replyMessage += `Total users referred by you: ${count.user_count}\n`;
+
+  // Reply to the user with the constructed message
+  ctx.reply(replyMessage);
 };
+
 module.exports = { startCommand, handleCheck };

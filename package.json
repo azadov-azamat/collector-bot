@@ -4,8 +4,8 @@
   "description": "",
   "main": "bot.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start":"nodemon bot.js"
+    "test": "nodemon admin_bot.js",
+    "start": "nodemon bot.js"
   },
   "keywords": [],
   "author": "",
@@ -14,7 +14,8 @@
     "dotenv": "^16.4.5",
     "mysql2": "^3.10.1",
     "sequelize": "^6.37.3",
-    "telegraf": "^4.16.3"
+    "telegraf": "^4.16.3",
+    "telegraf-session-local": "^2.1.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.3"
