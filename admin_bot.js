@@ -22,6 +22,7 @@ const {
   helpCommand,
   commandGroupButtons,
   commandChannelButtons,
+  addMessage,
 } = require('./controller/admin');
 
 bot.start(startCommand);
@@ -36,6 +37,7 @@ bot.command('add_channel', restricted, addChannel);
 bot.command('update_channel', restricted, updateChannel);
 bot.command('delete_channel', restricted, deleteChannel);
 
+bot.command('send_message',addMessage);
 bot.command('help', helpCommand);
 
 bot.action('add_group', (ctx) => {
@@ -65,7 +67,7 @@ bot.action('get_group', (ctx) => {
 
 bot.action('add_channel', (ctx) => {
   ctx.reply(
-    'Please provide channel details in the format: /add_channel <channel_name> <channel_link> <channel_count>',
+    'Please provide channel details in the format: /add_channel <channel_name> <channel_link>',
     commandButtons
   );
 });
@@ -93,11 +95,17 @@ bot.action('help', (ctx) => {
 });
 
 bot.action('group_button', (ctx) => {
-  ctx.reply("Guruhlar uchun",commandGroupButtons);
+  ctx.reply('Guruhlar uchun', commandGroupButtons);
 });
 
 bot.action('channel_button', (ctx) => {
-  ctx.reply("Kanallar uchun",commandChannelButtons);
+  ctx.reply('Kanallar uchun', commandChannelButtons);
+});
+bot.action('message', (ctx) => {
+  ctx.reply(
+    'Please provide channel details in the format: /send_message <"Your message">',
+    commandButtons
+  );
 });
 
 bot.launch();

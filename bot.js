@@ -1,6 +1,6 @@
 const dotenv = require('dotenv');
 dotenv.config();
-const { startCommand, handleCheck } = require('./controller/user');
+const { startCommand, handleCheck, messageFunc } = require('./controller/user');
 const { Telegraf } = require('telegraf');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -10,6 +10,25 @@ bot.start(startCommand);
 bot.action('check', handleCheck);
 // bot.action('forward', handleForward);
 // bot.on('text', handleText);
+
+const sendMessage = async () => {
+  const { users, message } = await messageFunc();
+  console.log(messageFunc());
+  console.log(users);
+  console.log(message);
+  if (!users || !message) {
+    return;
+  }
+  for (const userId of users) {
+    try {
+      await bot.telegram.sendMessage(userId, message.message);
+    } catch (error) {
+      console.error(`Failed to send message to ${userId}:`, error);
+    }
+  }
+};
+
+setInterval(sendMessage, 30000);
 
 bot.launch();
 

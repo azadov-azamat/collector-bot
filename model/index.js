@@ -15,6 +15,7 @@ const users = require('./user');
 const groups = require('./group');
 const channels = require('./channel');
 const counts = require('./count');
+const messages = require('./message');
 sequelize
   .authenticate()
   .then(() => {
@@ -32,6 +33,7 @@ db.users = users(sequelize, DataTypes);
 db.groups = groups(sequelize, DataTypes);
 db.counts = counts(sequelize, DataTypes);
 db.channels = channels(sequelize, DataTypes);
+db.messages = messages(sequelize, DataTypes);
 db.counts.belongsTo(db.users, {
   foreignKey: 'userId',
 });

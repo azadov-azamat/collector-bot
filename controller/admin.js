@@ -2,6 +2,7 @@ const db = require('./../model/index');
 const User = db.users;
 const Group = db.groups;
 const Channel = db.channels; // Assuming you have a channels model defined similarly to groups
+const Message = db.messages;
 const { Markup } = require('telegraf');
 
 const restricted = async (ctx, next) => {
@@ -21,6 +22,7 @@ const restricted = async (ctx, next) => {
 const commandButtons = Markup.inlineKeyboard([
   [Markup.button.callback('Group', 'group_button')],
   [Markup.button.callback('Channel', 'channel_button')],
+  [Markup.button.callback('Message', 'message')],
   [Markup.button.callback('Help', 'help')],
 ]);
 
@@ -124,7 +126,6 @@ const updateGroup = async (ctx) => {
   const [id, group_name, group_link, group_count] = ctx.message.text
     .split(' ')
     .slice(1);
-  const group = await Group.findByPk(id);
 
   if (!group_name) {
     await Group.update(
@@ -159,6 +160,9 @@ const deleteGroup = async (ctx) => {
 const addChannel = async (ctx) => {
   const [channel_name, channel_link] = ctx.message.text.split(' ').slice(1);
   console.log(channel_name);
+  console.log(ctx.message.text);
+  console.log(channel_name, channel_link);
+
   const channel = await Channel.findOne({
     where: { channel_link: channel_link },
   });
@@ -242,6 +246,37 @@ const helpCommand = (ctx) => {
   ctx.replyWithHTML(helpMessage, commandButtons);
 };
 
+const addMessage = async (ctx) => {
+  try {
+    const messageText = ctx.message.text;
+    const regex = /\/send_message\s+"([^"]+)"/;
+    const match = messageText.match(regex);
+
+    if (!match) {
+      ctx.reply(
+        'Please provide the message in the format: /send_message "Your message"'
+      );
+      return;
+    }
+
+    const message = match[1];
+    await Message.update(
+      { message_status: false },
+      {
+        where: {}, // This will match all rows
+      }
+    );
+    await Message.create({
+      message: message,
+      message_status: true,
+    });
+    ctx.reply('Message send');
+  } catch (error) {
+    console.log(error);
+    ctx.reply("Meesage wasn't send");
+  }
+};
+
 module.exports = {
   startCommand,
   login,
@@ -258,4 +293,5 @@ module.exports = {
   commandGroupButtons,
   commandChannelButtons,
   helpCommand,
+  addMessage,
 };
