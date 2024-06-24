@@ -25,8 +25,6 @@ const sendMessage = async () => {
   }
 };
 
-setInterval(sendMessage, 30000);
-
 bot.launch();
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
