@@ -13,9 +13,6 @@ bot.action('check', handleCheck);
 
 const sendMessage = async () => {
   const { users, message } = await messageFunc();
-  console.log(messageFunc());
-  console.log(users);
-  console.log(message);
   if (!users || !message) {
     return;
   }
