@@ -1,10 +1,20 @@
 module.exports = (sequelize, DataTypes) => {
   return sequelize.define('messages', {
-    message: {
+    message_id: {
       type: DataTypes.STRING,
+      allowNull: false
     },
-    message_status: {
+    chat_id: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    message_type: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    sent: {
       type: DataTypes.BOOLEAN,
-    },
+      defaultValue: false
+    }
   });
 };

@@ -13,6 +13,9 @@ const {
     addChannelScene,
     updateChannelScene
 } = require('./scene/channel');
+const {
+    adsScene
+} = require('./scene/ads');
 
 const bot = new Telegraf(process.env.ADMIN_BOT_TOKEN);
 const stage = new Scenes.Stage([
@@ -22,7 +25,8 @@ const stage = new Scenes.Stage([
     deleteGroupScene,
     deleteChannelScene,
     addChannelScene,
-    updateChannelScene
+    updateChannelScene,
+    adsScene
 ]);
 
 const ensureAuth = require('./middleware/ensure-auth');
@@ -30,17 +34,27 @@ const db = require('./model/index');
 const User = db.users;
 
 const {
-    startCommand,
     helpCommand,
     addMessage,
 } = require('./controller/admin');
+
 const {commandButtons, commandGroupButtons, commandChannelButtons} = require("./keyboards");
 const {setCommands} = require("./commands");
 
 bot.use(session());
 bot.use(stage.middleware());
 
-bot.start(startCommand);
+bot.start(async (ctx) => {
+    const userId = ctx.from.id; // Telegram foydalanuvchi IDsi
+    const user = await User.findByPk(userId);
+
+    if (user && !user.token) {
+        ctx.reply('Autentifikatsiya botiga xush kelibsiz! Iltimos, /login komandasi bilan tizimga kiring');
+    } else {
+        ctx.reply('Komandalar ro\'yhatini ko\'rib chiqing');
+    }
+});
+
 
 setCommands(bot);
 
