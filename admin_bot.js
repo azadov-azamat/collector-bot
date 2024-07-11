@@ -1,111 +1,93 @@
 const dotenv = require('dotenv');
 dotenv.config();
-const { Telegraf } = require('telegraf');
-
-const bot = new Telegraf(process.env.ADMIN_BOT_TOKEN);
-
-// Initialize session middleware
+const {Telegraf, Scenes, session} = require('telegraf');
+const loginScene = require('./scene/login');
+const {
+    addGroupScene,
+    updateGroupScene,
+    deleteGroupScene
+} = require('./scene/group');
 
 const {
-  startCommand,
-  login,
-  addGroup,
-  updateGroup,
-  deleteGroup,
-  restricted,
-  getGroup,
-  addChannel,
-  updateChannel,
-  deleteChannel,
-  getChannel,
-  commandButtons,
-  helpCommand,
-  commandGroupButtons,
-  commandChannelButtons,
-  addMessage,
+    deleteChannelScene,
+    addChannelScene,
+    updateChannelScene
+} = require('./scene/channel');
+
+const bot = new Telegraf(process.env.ADMIN_BOT_TOKEN);
+const stage = new Scenes.Stage([
+    loginScene,
+    addGroupScene,
+    updateGroupScene,
+    deleteGroupScene,
+    deleteChannelScene,
+    addChannelScene,
+    updateChannelScene
+]);
+
+const ensureAuth = require('./middleware/ensure-auth');
+const db = require('./model/index');
+const User = db.users;
+
+const {
+    startCommand,
+    helpCommand,
+    addMessage,
 } = require('./controller/admin');
+const {commandButtons, commandGroupButtons, commandChannelButtons} = require("./keyboards");
+const {setCommands} = require("./commands");
+
+bot.use(session());
+bot.use(stage.middleware());
 
 bot.start(startCommand);
-bot.command('login', login);
-bot.command('get_group', restricted, getGroup);
-bot.command('add_group', restricted, addGroup);
-bot.command('update_group', restricted, updateGroup);
-bot.command('delete_group', restricted, deleteGroup);
 
-bot.command('get_channel', restricted, getChannel);
-bot.command('add_channel', restricted, addChannel);
-bot.command('update_channel', restricted, updateChannel);
-bot.command('delete_channel', restricted, deleteChannel);
+setCommands(bot);
 
-bot.command('send_message',addMessage);
+bot.command('login', async (ctx) => {
+    const userId = ctx.from.id; // Telegram foydalanuvchi IDsi
+    const user = await User.findByPk(userId);
+
+    if (user && !user.token) {
+        ctx.scene.enter('loginScene');
+    } else {
+        ctx.reply('Siz tizimga kirgansiz!');
+    }
+});
+
+bot.command('groups', ensureAuth(), (ctx) => {
+    ctx.reply('Guruhlarni boshqarish uchun variantni tanlang:', commandGroupButtons);
+});
+
+bot.command('channels', (ctx) => {
+    ctx.reply('Kanallarni boshqarish uchun variantni tanlang:', commandChannelButtons);
+});
+
+
+require('./stage/bot-hears')(bot);
+
+bot.command('send_message', addMessage);
 bot.command('help', helpCommand);
 
-bot.action('add_group', (ctx) => {
-  ctx.reply(
-    'Please provide group details in the format: /add_group <group_name> <group_link> <group_count>',
-    commandButtons
-  );
-});
-
-bot.action('update_group', (ctx) => {
-  ctx.reply(
-    'Please provide group update details in the format: /update_group <id> <group_name> <group_link> <group_count>',
-    commandButtons
-  );
-});
-
-bot.action('delete_group', (ctx) => {
-  ctx.reply(
-    'Please provide group ID to delete in the format: /delete_group <id>',
-    commandButtons
-  );
-});
-
-bot.action('get_group', (ctx) => {
-  getGroup(ctx);
-});
-
-bot.action('add_channel', (ctx) => {
-  ctx.reply(
-    'Please provide channel details in the format: /add_channel <channel_name> <channel_link>',
-    commandButtons
-  );
-});
-
-bot.action('update_channel', (ctx) => {
-  ctx.reply(
-    'Please provide channel update details in the format: /update_channel <id> <channel_name> <channel_link> <channel_count>',
-    commandButtons
-  );
-});
-
-bot.action('delete_channel', (ctx) => {
-  ctx.reply(
-    'Please provide channel ID to delete in the format: /delete_channel <id>',
-    commandButtons
-  );
-});
-
-bot.action('get_channel', (ctx) => {
-  getChannel(ctx);
-});
 
 bot.action('help', (ctx) => {
-  helpCommand(ctx);
+    helpCommand(ctx);
 });
 
-bot.action('group_button', (ctx) => {
-  ctx.reply('Guruhlar uchun', commandGroupButtons);
-});
-
-bot.action('channel_button', (ctx) => {
-  ctx.reply('Kanallar uchun', commandChannelButtons);
-});
 bot.action('message', (ctx) => {
-  ctx.reply(
-    'Please provide channel details in the format: /send_message <"Your message">',
-    commandButtons
-  );
+    ctx.reply(
+        'Please provide channel details in the format: /send_message <"Your message">',
+        commandButtons
+    );
+});
+
+bot.catch((err, ctx) => {
+    console.log(err);
+    ctx.reply('Xatolik yuz berdi.');
+
+    if (ctx.scene) {
+        ctx.scene.leave();
+    }
 });
 
 bot.launch();

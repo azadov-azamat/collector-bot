@@ -1,8 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
-  const counts = sequelize.define('counts', {
+  return sequelize.define('counts', {
     user_count: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
     },
   });
-  return counts;
 };

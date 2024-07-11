@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  const channels = sequelize.define('cl_channels', {
+  return sequelize.define('cl_channels', {
     channel_name: {
       type: DataTypes.STRING,
     },
@@ -12,5 +12,4 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: true,
     },
   });
-  return channels;
 };

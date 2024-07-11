@@ -14,9 +14,9 @@ const startCommand = async (ctx) => {
     const referralLink = `https://t.me/${ctx.botInfo.username}?start=${userId}`;
     const referrerId = ctx.message.text.split(' ')[1] || null;
     const user = await User.findByPk(userId);
-    const group = await Group.findOne({ where: { group_status: 1 } });
+    const group = await Group.findOne({ where: { group_status: true } });
     if (!group) {
-      ctx.reply("Hozirda active guruhlarimiz yo'q!");
+      return ctx.reply("Hozirda active guruhlarimiz yo'q!");
     }
     if (!user) {
       await User.create({
@@ -80,7 +80,7 @@ const handleCheck = async (ctx) => {
     const userId = ctx.from.id;
 
     // Find the active group
-    const group = await Group.findOne({ where: { group_status: 1 } });
+    const group = await Group.findOne({ where: { group_status: true } });
 
     // Find all active channels
     const channels = await Channel.findAll({

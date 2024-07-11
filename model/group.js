@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
     },
     group_count: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
     },
     group_status: {
       type: DataTypes.BOOLEAN,

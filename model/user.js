@@ -1,13 +1,16 @@
 module.exports = (sequelize, DataTypes) => {
-  const users = sequelize.define('users', {
+  return sequelize.define('users', {
     user_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       unique: true,
     },
     user_name: {
       type: DataTypes.STRING,
       unique: true,
+    },
+    token: {
+      type: DataTypes.STRING,
     },
     user_link: {
       type: DataTypes.STRING,
@@ -18,5 +21,4 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 'user',
     },
   });
-  return users;
 };
