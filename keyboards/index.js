@@ -1,10 +1,4 @@
 const {Markup} = require("telegraf");
-const commandButtons = Markup.inlineKeyboard([
-    [Markup.button.callback('Guruhlar', 'group_button')],
-    [Markup.button.callback('Kanallar', 'channel_button')],
-    [Markup.button.callback('Xabar', 'message')],
-    [Markup.button.callback('Yordam', 'help')],
-]);
 
 const commandGroupButtons = Markup.keyboard([
     ['Guruh qo\'shish', 'Guruh o\'zgartirish'],
@@ -17,4 +11,4 @@ const commandChannelButtons = Markup.keyboard([
 ]).resize();
 
 
-module.exports = {commandGroupButtons, commandChannelButtons, commandButtons};
+module.exports = {commandGroupButtons, commandChannelButtons};

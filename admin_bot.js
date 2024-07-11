@@ -33,13 +33,9 @@ const ensureAuth = require('./middleware/ensure-auth');
 const db = require('./model/index');
 const User = db.users;
 
-const {
-    helpCommand,
-    addMessage,
-} = require('./controller/admin');
-
-const {commandButtons, commandGroupButtons, commandChannelButtons} = require("./keyboards");
+const {commandGroupButtons, commandChannelButtons} = require("./keyboards");
 const {setCommands} = require("./commands");
+const {removeKeyboard} = require("telegraf/markup");
 
 bot.use(session());
 bot.use(stage.middleware());
@@ -51,10 +47,9 @@ bot.start(async (ctx) => {
     if (user && !user.token) {
         ctx.reply('Autentifikatsiya botiga xush kelibsiz! Iltimos, /login komandasi bilan tizimga kiring');
     } else {
-        ctx.reply('Komandalar ro\'yhatini ko\'rib chiqing');
+        ctx.reply('Komandalar ro\'yhatini ko\'rib chiqing', removeKeyboard());
     }
 });
-
 
 setCommands(bot);
 
@@ -65,7 +60,7 @@ bot.command('login', async (ctx) => {
     if (user && !user.token) {
         ctx.scene.enter('loginScene');
     } else {
-        ctx.reply('Siz tizimga kirgansiz!');
+        ctx.reply('Siz tizimga kirgansiz!', removeKeyboard());
     }
 });
 
@@ -77,23 +72,8 @@ bot.command('channels', (ctx) => {
     ctx.reply('Kanallarni boshqarish uchun variantni tanlang:', commandChannelButtons);
 });
 
-
 require('./stage/bot-hears')(bot);
-
-bot.command('send_message', addMessage);
-bot.command('help', helpCommand);
-
-
-bot.action('help', (ctx) => {
-    helpCommand(ctx);
-});
-
-bot.action('message', (ctx) => {
-    ctx.reply(
-        'Please provide channel details in the format: /send_message <"Your message">',
-        commandButtons
-    );
-});
+require('./stage/bot-message')(bot);
 
 bot.catch((err, ctx) => {
     console.log(err);

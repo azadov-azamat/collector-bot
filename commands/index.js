@@ -4,6 +4,7 @@ async function setCommands(bot) {
         { command: 'login', description: "Tizimga kirish" },
         { command: 'groups', description: "Guruhlaringiz" },
         { command: 'channels', description: "Kanallaringiz" },
+        { command: 'ads', description: "E'lonlar" },
         { command: 'help', description: "Yordam olish" },
     ].filter(Boolean);
 
