@@ -1,50 +1,12 @@
 const { Scenes, Markup} = require('telegraf');
 const db = require('../model');
 const { commandChannelButtons} = require("../keyboards");
-const {removeKeyboard} = require("telegraf/markup");
 const Channel = db.channels;
 
 const { WizardScene } = Scenes;
 
-const addChannelScene = new WizardScene(
-    'addChannelScene',
-    (ctx) => {
-        ctx.reply('Iltimos, kanal nomini kiriting:', removeKeyboard());
-        ctx.wizard.state.data = {};
-        return ctx.wizard.next();
-    },
-    (ctx) => {
-        ctx.wizard.state.data.channel_name = ctx.message.text;
-        ctx.reply('Iltimos, kanal linkini kiriting:');
-        return ctx.wizard.next();
-    },
-    async (ctx) => {
-        ctx.wizard.state.data.channel_link = ctx.message.text;
-        const { channel_name, channel_link } = ctx.wizard.state.data;
 
-        try {
-            const channel = await Channel.findOne({ where: { channel_link } });
-            if (channel) {
-                ctx.reply('Bu link oldin ham kiritilgan.');
-                return ctx.scene.leave();
-            }
-
-            await Channel.create({
-                channel_name,
-                channel_link,
-            });
-
-            ctx.reply('Kanal muvaffaqiyatli qo\'shildi.');
-            ctx.reply('Kerakli bo\'limni tanlang', commandChannelButtons);
-        } catch (error) {
-            console.log(error);
-            ctx.reply('Botda nosozlik.');
-        }
-        return ctx.scene.leave();
-    }
-);
-
-const updateChannelScene = new Scenes.WizardScene(
+const updateChannelScene = new WizardScene(
     'updateChannelScene',
     async (ctx) => {
         const channels = await Channel.findAll();
@@ -113,7 +75,7 @@ const updateChannelScene = new Scenes.WizardScene(
 updateChannelScene.action(/select_\d+/, (ctx) => ctx.wizard.steps[ctx.wizard.cursor](ctx));
 updateChannelScene.action(/channel_.+/, (ctx) => ctx.wizard.steps[ctx.wizard.cursor](ctx));
 
-const deleteChannelScene = new Scenes.WizardScene(
+const deleteChannelScene = new WizardScene(
     'deleteChannelScene',
     async (ctx) => {
         const channels = await Channel.findAll();

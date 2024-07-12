@@ -24,6 +24,7 @@ module.exports = function (bot) {
     bot.hears('Kanallar ro\'yhati', getChannels);
 
     bot.hears('Kanal qo\'shish', (ctx) => {
+        ctx.reply("Kanal qo'shishdan oldin, admin va client bot larni kanal admini qiling!")
         ctx.reply("O'zingizning kanalingizni ro'yhatdan tanlang ", Markup.keyboard([
             Markup.button.channelRequest("Tanlash", 1)
         ]).resize().oneTime());
