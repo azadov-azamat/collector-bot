@@ -10,7 +10,6 @@ const {
 
 const {
     deleteChannelScene,
-    addChannelScene,
     updateChannelScene
 } = require('../scene/channel.js');
 const {
@@ -24,7 +23,6 @@ const stage = new Scenes.Stage([
     updateGroupScene,
     deleteGroupScene,
     deleteChannelScene,
-    addChannelScene,
     updateChannelScene,
     adsScene
 ]);

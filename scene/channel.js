@@ -163,7 +163,6 @@ const getChannels = async (ctx) => {
 };
 
 module.exports = {
-    addChannelScene,
     updateChannelScene,
     deleteChannelScene,
     getChannels
