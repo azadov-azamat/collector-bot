@@ -21,7 +21,7 @@ bot.use(async (ctx, next) => {
     return next();
 });
 
-async function checkUserMembership(userId, channels) {
+async function checkUserMembership(ctx, userId, channels) {
     const results = {};
     for (const channel of channels) {
         let chatMember
@@ -29,6 +29,7 @@ async function checkUserMembership(userId, channels) {
             chatMember = await bot.telegram.getChatMember(`@${channel}`, userId);
         } catch (e) {
             console.log("Error: ", e)
+            return ctx.reply("Muammo haqida xabar bering @Ramazon_Safarov: " + e);
         }
         if (chatMember) {
             results[channel] = chatMember.status !== 'left';
@@ -111,7 +112,7 @@ async function handleSubscriptionCheck(ctx, next) {
 
     const channelUsernames = channels.map((channel) => channel.channel_link);
 
-    const membership = await checkUserMembership(userId, channelUsernames);
+    const membership = await checkUserMembership(ctx, userId, channelUsernames);
 
     const notSubscribedChannels = Object.keys(membership).filter(channel => !membership[channel]);
 
