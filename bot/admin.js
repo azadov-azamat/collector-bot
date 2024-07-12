@@ -48,8 +48,10 @@ bot.start(async (ctx) => {
 
     if (user && !user.token) {
         ctx.reply('Autentifikatsiya botiga xush kelibsiz! Iltimos, /login komandasi bilan tizimga kiring');
-    } else {
+    } else if (user && user.token) {
         ctx.reply('Komandalar ro\'yhatini ko\'rib chiqing', removeKeyboard());
+    } else {
+        ctx.reply('Autentifikatsiya botiga xush kelibsiz! Iltimos, /login komandasi bilan tizimga kiring');
     }
 });
 
