@@ -34,21 +34,10 @@ async function handleSendAdsToUsers(ctx, pendingMessage) {
     const userIds = users.map(row => row.user_id);
 
     for (const userId of userIds) {
-        switch (pendingMessage.message_type) {
-            case 'text':
-                await clientBot.telegram.sendMessage(userId, pendingMessage.message_id);
-                break;
-            case 'photo':
-                await clientBot.telegram.sendPhoto(userId, pendingMessage.message_id);
-                break;
-            case 'video':
-                await clientBot.telegram.sendVideo(userId, pendingMessage.message_id);
-                break;
-            case 'audio':
-                await clientBot.telegram.sendAudio(userId, pendingMessage.message_id);
-                break;
-            default:
-                console.log('Unsupported message type');
+        try {
+            await clientBot.telegram.forwardMessage(userId, pendingMessage.chat_id, pendingMessage.message_id);
+        } catch (err) {
+            console.error(`Foydalanuvchi ${userId} ga xabar yuborishda xatolik: ${err.message}`);
         }
     }
 
