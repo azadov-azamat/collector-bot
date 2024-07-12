@@ -2,10 +2,10 @@
   "name": "collectorbot",
   "version": "1.0.0",
   "description": "",
-  "main": "bot.js",
+  "main": "bot/client.js",
   "scripts": {
-    "test": "nodemon admin_bot.js",
-    "start": "nodemon bot.js"
+    "test": "nodemon bot/admin.js",
+    "start": "nodemon bot/client.js"
   },
   "keywords": [],
   "author": "",

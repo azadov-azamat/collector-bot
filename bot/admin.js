@@ -1,21 +1,21 @@
 const dotenv = require('dotenv');
 dotenv.config();
 const {Telegraf, Scenes, session} = require('telegraf');
-const loginScene = require('./scene/login');
+const loginScene = require('../scene/login.js');
 const {
     addGroupScene,
     updateGroupScene,
     deleteGroupScene
-} = require('./scene/group');
+} = require('../scene/group.js');
 
 const {
     deleteChannelScene,
     addChannelScene,
     updateChannelScene
-} = require('./scene/channel');
+} = require('../scene/channel.js');
 const {
     adsScene
-} = require('./scene/ads');
+} = require('../scene/ads.js');
 
 const bot = new Telegraf(process.env.ADMIN_BOT_TOKEN);
 const stage = new Scenes.Stage([
@@ -29,12 +29,12 @@ const stage = new Scenes.Stage([
     adsScene
 ]);
 
-const ensureAuth = require('./middleware/ensure-auth');
-const db = require('./model/index');
+const ensureAuth = require('../middleware/ensure-auth.js');
+const db = require('../model/index.js');
 const User = db.users;
 
-const {commandGroupButtons, commandChannelButtons} = require("./keyboards");
-const {setCommands} = require("./commands");
+const {commandGroupButtons, commandChannelButtons} = require("../keyboards/index.js");
+const {setCommands} = require("../commands/index.js");
 const {removeKeyboard} = require("telegraf/markup");
 
 bot.use(session());
@@ -72,8 +72,8 @@ bot.command('channels', (ctx) => {
     ctx.reply('Kanallarni boshqarish uchun variantni tanlang:', commandChannelButtons);
 });
 
-require('./stage/bot-hears')(bot);
-require('./stage/bot-message')(bot);
+require('../stage/bot-hears.js')(bot);
+require('../stage/bot-message.js')(bot);
 
 bot.catch((err, ctx) => {
     console.log(err);
