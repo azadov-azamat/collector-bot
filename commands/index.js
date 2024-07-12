@@ -25,6 +25,8 @@ async function setCommands(bot) {
 
 async function handleSendAdsToUsers(ctx, pendingMessage) {
 
+    console.log("pendingMessage", pendingMessage)
+    console.log("pendingMessage.mes ========== ", pendingMessage.message_id);
     const users = await User.findAll({
         where: {
             role: "user"
@@ -35,7 +37,17 @@ async function handleSendAdsToUsers(ctx, pendingMessage) {
 
     for (const userId of userIds) {
         try {
-            await clientBot.telegram.forwardMessage(userId, pendingMessage.chat_id, pendingMessage.message_id);
+            if (pendingMessage.message_type === 'text') {
+                console.error("text ga tushdi apandim")
+                await clientBot.telegram.sendMessage(userId, pendingMessage.message_id);
+            } else if (pendingMessage.message_type === 'photo') {
+                console.error("photo ga tushdi apandim")
+                await clientBot.telegram.sendPhoto(userId, pendingMessage.file_id);
+            } else if (pendingMessage.message_type === 'video') {
+                await clientBot.telegram.sendVideo(userId, pendingMessage.file_id);
+            } else if (pendingMessage.message_type === 'audio') {
+                await clientBot.telegram.sendAudio(userId, pendingMessage.file_id);
+            }
         } catch (err) {
             console.error(`Foydalanuvchi ${userId} ga xabar yuborishda xatolik: ${err.message}`);
         }

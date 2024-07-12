@@ -55,7 +55,7 @@ module.exports = function (bot) {
             await currentAds.save();
 
             await ctx.reply('Reklama saqlandi!', Markup.removeKeyboard());
-
+            console.log("currentAds", currentAds)
             await handleSendAdsToUsers(ctx, currentAds);
 
         } catch (err) {

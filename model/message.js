@@ -15,6 +15,9 @@ module.exports = (sequelize, DataTypes) => {
     owner_id: {
       type: DataTypes.INTEGER,
     },
+    file_id: {
+      type: DataTypes.STRING,
+    },
     sent: {
       type: DataTypes.BOOLEAN,
       defaultValue: false

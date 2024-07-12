@@ -56,6 +56,17 @@ module.exports = function (bot) {
         const chatId = message.chat.id;
         const messageType = message.text ? 'text' : message.photo ? 'photo' : message.video ? 'video' : message.audio ? 'audio' : 'other';
 
+        console.warn(message)
+
+        let fileId = null;
+        if (message.photo) {
+            fileId = message.photo[message.photo.length - 1].file_id;
+        } else if (message.video) {
+            fileId = message.video.file_id;
+        } else if (message.audio) {
+            fileId = message.audio.file_id;
+        }
+
         let pendingMessage = {
             message_id: messageId,
             chat_id: chatId,
@@ -63,18 +74,19 @@ module.exports = function (bot) {
             sent: false,
             message_status: false,
             owner_id: userId,
+            file_id: fileId,
         };
-
+        console.log(pendingMessage)
        await Message.create(pendingMessage);
 
         if (messageType === 'text') {
             await ctx.reply(message.text);
         } else if (messageType === 'photo') {
-            await ctx.replyWithPhoto(message.photo[message.photo.length - 1].file_id, { caption: message.caption || '' });
+            await ctx.replyWithPhoto(fileId, { caption: message.caption || '' });
         } else if (messageType === 'video') {
-            await ctx.replyWithVideo(message.video.file_id, { caption: message.caption || '' });
+            await ctx.replyWithVideo(fileId, { caption: message.caption || '' });
         } else if (messageType === 'audio') {
-            await ctx.replyWithAudio(message.audio.file_id, { caption: message.caption || '' });
+            await ctx.replyWithAudio(fileId, { caption: message.caption || '' });
         }
 
         await ctx.reply(
