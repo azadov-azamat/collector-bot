@@ -40,6 +40,8 @@ const {removeKeyboard} = require("telegraf/markup");
 bot.use(session());
 bot.use(stage.middleware());
 
+setCommands(bot);
+
 bot.start(async (ctx) => {
     const userId = ctx.from.id; // Telegram foydalanuvchi IDsi
     const user = await User.findByPk(userId);
@@ -50,8 +52,6 @@ bot.start(async (ctx) => {
         ctx.reply('Komandalar ro\'yhatini ko\'rib chiqing', removeKeyboard());
     }
 });
-
-setCommands(bot);
 
 bot.command('login', async (ctx) => {
     const userId = ctx.from.id; // Telegram foydalanuvchi IDsi
@@ -64,12 +64,31 @@ bot.command('login', async (ctx) => {
     }
 });
 
+bot.command('ads', ensureAuth(), (ctx) => {
+    ctx.reply('Reklama xabarini yuboring:', removeKeyboard());
+});
 bot.command('groups', ensureAuth(), (ctx) => {
     ctx.reply('Guruhlarni boshqarish uchun variantni tanlang:', commandGroupButtons);
 });
 
-bot.command('channels', (ctx) => {
+bot.command('channels', ensureAuth(), (ctx) => {
     ctx.reply('Kanallarni boshqarish uchun variantni tanlang:', commandChannelButtons);
+});
+
+bot.command('help', (ctx) => {
+    ctx.reply('Muammo bo\'yicha @azamat_azadov bilan bog\'laning', removeKeyboard());
+});
+
+bot.command('logout', async (ctx) => {
+    const userId = ctx.from.id; // Telegram foydalanuvchi IDsi
+    const user = await User.findByPk(userId);
+
+    if (user) {
+        user.token = null;
+        await user.save();
+
+        ctx.reply("Tizimdan chiqdingiz, qayta kirish uchun /login buyrug'idan foydalaning!", removeKeyboard())
+    }
 });
 
 require('../stage/bot-hears.js')(bot);
