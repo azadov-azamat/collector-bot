@@ -57,10 +57,12 @@ bot.command('login', async (ctx) => {
     const userId = ctx.from.id; // Telegram foydalanuvchi IDsi
     const user = await User.findByPk(userId);
 
-    if (user && !user.token) {
+    if (user && !user.token || !user) {
         ctx.scene.enter('loginScene');
-    } else {
+    } else if (user && user.token) {
         ctx.reply('Siz tizimga kirgansiz!', removeKeyboard());
+    } else {
+        ctx.scene.enter('loginScene');
     }
 });
 
