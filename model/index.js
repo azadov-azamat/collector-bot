@@ -11,7 +11,7 @@ const sequelize = new Sequelize(
     {
         host: HOST,
         dialect: DIALECT,
-        operatorsAliases: false,
+        // operatorsAliases: false,
     }
 );
 
