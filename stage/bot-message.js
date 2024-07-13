@@ -7,21 +7,21 @@ const {Markup} = require("telegraf");
 const Channel = db.channels;
 const Message = db.messages;
 
-const BOT_ID = parseInt(process.env.BOT_TOKEN.split(':')[0], 10);
+// const BOT_ID = parseInt(process.env.BOT_TOKEN.split(':')[0], 10);
 
 module.exports = function (bot) {
 
     bot.on(message('chat_shared'), ensureAuth(), async ctx => {
         await ctx.replyWithChatAction('typing');
-        let {chat_id: chatId, request_id: requestid} = ctx.update.message.chat_shared;
+        let {chat_id: chatId} = ctx.update.message.chat_shared;
 
-        let admins;
+        // let admins;
         let channel;
-        let user;
+        // let user;
 
         try {
             channel = await ctx.telegram.getChat(chatId);
-            admins = await ctx.telegram.getChatAdministrators(chatId);
+            // admins = await ctx.telegram.getChatAdministrators(chatId);
             // user = await ctx.telegram.getChatMember(chatId, BOT_ID);
         } catch (e) {
             return ctx.reply("Admin botni tanlangan kanalda admin ekanlikini tekshiring", commandChannelButtons);
@@ -49,7 +49,7 @@ module.exports = function (bot) {
 
     });
 
-    bot.on('message', async (ctx) => {
+    bot.on('message', ensureAuth(), async (ctx) => {
         const userId = ctx.from.id;
         const message = ctx.message;
         const messageId = message.message_id;

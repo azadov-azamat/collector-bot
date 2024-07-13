@@ -10,7 +10,6 @@ const {
 
 const {
     deleteChannelScene,
-    addChannelScene,
     updateChannelScene
 } = require('../scene/channel.js');
 const {
@@ -24,7 +23,6 @@ const stage = new Scenes.Stage([
     updateGroupScene,
     deleteGroupScene,
     deleteChannelScene,
-    addChannelScene,
     updateChannelScene,
     adsScene
 ]);
@@ -48,8 +46,10 @@ bot.start(async (ctx) => {
 
     if (user && !user.token) {
         ctx.reply('Autentifikatsiya botiga xush kelibsiz! Iltimos, /login komandasi bilan tizimga kiring');
-    } else {
+    } else if (user && user.token) {
         ctx.reply('Komandalar ro\'yhatini ko\'rib chiqing', removeKeyboard());
+    } else {
+        ctx.reply('Autentifikatsiya botiga xush kelibsiz! Iltimos, /login komandasi bilan tizimga kiring');
     }
 });
 
@@ -57,10 +57,12 @@ bot.command('login', async (ctx) => {
     const userId = ctx.from.id; // Telegram foydalanuvchi IDsi
     const user = await User.findByPk(userId);
 
-    if (user && !user.token) {
+    if (user && !user.token || !user) {
         ctx.scene.enter('loginScene');
-    } else {
+    } else if (user && user.token) {
         ctx.reply('Siz tizimga kirgansiz!', removeKeyboard());
+    } else {
+        ctx.scene.enter('loginScene');
     }
 });
 

@@ -1,6 +1,5 @@
 const { Scenes, Markup} = require('telegraf');
 const db = require('../model');
-const {removeKeyboard} = require("telegraf/markup");
 const Message = db.messages;
 
 const { WizardScene } = Scenes;
