@@ -42,7 +42,8 @@ const updateChannelScene = new WizardScene(
 
         const updateButtons = [
             Markup.button.callback('Kanal nomi', 'channel_name'),
-            Markup.button.callback('Kanal linki', 'channel_link')
+            Markup.button.callback('Kanal linki', 'channel_link'),
+            Markup.button.callback('Kanal holati', 'channel_status')
         ];
 
         ctx.replyWithMarkdown(message, Markup.inlineKeyboard(updateButtons, { columns: 1 }).resize());
@@ -50,13 +51,29 @@ const updateChannelScene = new WizardScene(
     },
     async (ctx) => {
         await ctx.deleteMessage();
-        ctx.wizard.state.data.fieldToUpdate = ctx.callbackQuery.data;
-        ctx.reply(`Iltimos, yangi ${ctx.wizard.state.data.fieldToUpdate} ni kiriting:`);
+        const fieldToUpdate = ctx.callbackQuery.data;
+        ctx.wizard.state.data.fieldToUpdate = fieldToUpdate;
+
+        if (fieldToUpdate === 'channel_status') {
+            const statusButtons = [
+                Markup.button.callback('Aktivlashtirish', 'status_active'),
+                Markup.button.callback('Faolsizlashtirish', 'status_inactive')
+            ];
+            await ctx.reply('Kanal holatini tanlang:', Markup.inlineKeyboard(statusButtons).resize());
+        } else {
+            await ctx.reply(`Iltimos, yangi ${fieldToUpdate} ni kiriting:`);
+        }
         return ctx.wizard.next();
     },
     async (ctx) => {
-        const newValue = ctx.message.text;
+        let newValue;
         const { id, fieldToUpdate } = ctx.wizard.state.data;
+
+        if (fieldToUpdate === 'channel_status') {
+            newValue = ctx.callbackQuery.data === 'status_active';
+        } else {
+            newValue = ctx.message.text;
+        }
 
         let updateData = {};
         updateData[fieldToUpdate] = newValue;

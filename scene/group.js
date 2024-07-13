@@ -119,7 +119,8 @@ const updateGroupScene = new WizardScene(
         const updateButtons = [
             Markup.button.callback('Guruh nomi', 'group_name'),
             Markup.button.callback('Guruh linki', 'group_link'),
-            Markup.button.callback('Guruh a\'zolari soni', 'group_count')
+            Markup.button.callback('Guruh a\'zolari soni', 'group_count'),
+            Markup.button.callback('Guruh holati', 'group_status')
         ];
 
         ctx.replyWithMarkdown(message, Markup.inlineKeyboard(updateButtons, { columns: 1 }).resize());
@@ -127,13 +128,29 @@ const updateGroupScene = new WizardScene(
     },
     async (ctx) => {
         await ctx.deleteMessage();
-        ctx.wizard.state.data.fieldToUpdate = ctx.callbackQuery.data;
-        ctx.reply(`Iltimos, yangi ${ctx.wizard.state.data.fieldToUpdate} ni kiriting:`);
+        const fieldToUpdate = ctx.callbackQuery.data;
+        ctx.wizard.state.data.fieldToUpdate = fieldToUpdate;
+
+        if (fieldToUpdate === 'group_status') {
+            const statusButtons = [
+                Markup.button.callback('Aktivlashtirish', 'status_active'),
+                Markup.button.callback('Faolsizlashtirish', 'status_inactive')
+            ];
+            await ctx.reply('Guruh holatini tanlang:', Markup.inlineKeyboard(statusButtons).resize());
+        } else {
+            await ctx.reply(`Iltimos, yangi ${fieldToUpdate} ni kiriting:`);
+        }
         return ctx.wizard.next();
     },
     async (ctx) => {
-        const newValue = ctx.message.text;
+        let newValue;
         const { id, fieldToUpdate } = ctx.wizard.state.data;
+
+        if (fieldToUpdate === 'group_status') {
+            newValue = ctx.callbackQuery.data === 'status_active';
+        } else {
+            newValue = ctx.message.text;
+        }
 
         let updateData = {};
         updateData[fieldToUpdate] = newValue;
