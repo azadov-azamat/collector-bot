@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  const groups = sequelize.define('cl_groups', {
+  return sequelize.define('cl_groups', {
     group_name: {
       type: DataTypes.STRING,
     },
@@ -15,5 +15,4 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: true,
     },
   });
-  return groups;
 };

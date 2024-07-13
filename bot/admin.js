@@ -44,6 +44,10 @@ bot.start(async (ctx) => {
     const userId = ctx.from.id; // Telegram foydalanuvchi IDsi
     const user = await User.findByPk(userId);
 
+    if (ctx.scene) {
+        ctx.scene.leave();
+    }
+
     if (user && !user.token) {
         ctx.reply('Autentifikatsiya botiga xush kelibsiz! Iltimos, /login komandasi bilan tizimga kiring');
     } else if (user && user.token) {
@@ -56,6 +60,10 @@ bot.start(async (ctx) => {
 bot.command('login', async (ctx) => {
     const userId = ctx.from.id; // Telegram foydalanuvchi IDsi
     const user = await User.findByPk(userId);
+
+    if (ctx.scene) {
+        ctx.scene.leave();
+    }
 
     if (user && !user.token || !user) {
         ctx.scene.enter('loginScene');
@@ -98,7 +106,7 @@ require('../stage/bot-message.js')(bot);
 
 bot.catch((err, ctx) => {
     console.log(err);
-    ctx.reply('Xatolik yuz berdi.');
+    ctx.reply(`Xatolik yuz berdi: ${err}`);
 
     if (ctx.scene) {
         ctx.scene.leave();

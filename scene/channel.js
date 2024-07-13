@@ -146,16 +146,23 @@ const getChannels = async (ctx) => {
             ctx.reply('Kanallar topilmadi.');
             return;
         }
-        let message = '*Kanallar ro\'yxati:*\n\n';
-        channels.forEach((channel) => {
+        console.log("channels", channels)
+        ctx.replyWithMarkdown('*Kanallar ro\'yxati:*\n \n');
+
+        channels.forEach((channel ) => {
+            let message = '*Kanal haqida m\'lumot:*\n \n';
+            const channelName = channel.channel_name.replace(/_/g, '\\_');
+            const channelLink = channel.channel_link.replace(/_/g, '\\_');
             message += `*ID:* ${channel.id}\n`;
-            message += `*Nomi:* ${channel.channel_name}\n`;
-            message += `*Linki:* ${channel.channel_link}\n`;
+            message += `*Nomi:* ${channelName}\n`;
+            message += `*Linki:* @${channelLink}\n`;
             message += `*Holati:* ${channel.channel_status ? 'Faol' : 'Faol emas'}\n`;
             message += `*Yaratilgan sanasi:* ${channel.createdAt.toISOString().split('T')[0]}\n`;
-            message += `*Yangilangan sanasi:* ${channel.updatedAt.toISOString().split('T')[0]}\n`;
+            message += `*Yangilangan sanasi:* ${channel.updatedAt.toISOString().split('T')[0]}\n\n`;
+
+            ctx.replyWithMarkdown(message);
         });
-        ctx.replyWithMarkdown(message);
+
     } catch (error) {
         console.log(error);
         ctx.reply('Botda nosozlik.');

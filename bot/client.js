@@ -25,6 +25,7 @@ async function checkUserMembership(ctx, userId, channels) {
     const results = {};
     for (const channel of channels) {
         let chatMember
+        console.log(channel);
         try {
             chatMember = await bot.telegram.getChatMember(`@${channel}`, userId);
         } catch (e) {
