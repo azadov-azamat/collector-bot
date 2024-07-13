@@ -25,7 +25,9 @@ const updateChannelScene = new WizardScene(
     async (ctx) => {
         await ctx.deleteMessage();
         const callbackData = ctx.callbackQuery.data;
+        console.log("callbackData", callbackData);
         const channelId = callbackData.split('_')[1];
+        console.log("channelId", channelId);
         ctx.wizard.state.data.id = channelId;
         const channel = await Channel.findByPk(channelId);
 
@@ -35,8 +37,12 @@ const updateChannelScene = new WizardScene(
         }
 
         let message = `*Kanal ID:* ${channel.id}\n`;
-        message += `*Kanal nomi:* ${channel.channel_name}\n`;
-        message += `*Kanal linki:* ${channel.channel_link}\n`;
+        const channelName = channel.channel_name.replace(/_/g, '\\_');
+        const channelLink = channel.channel_link.replace(/_/g, '\\_');
+        message += `*ID:* ${channel.id}\n`;
+        message += `*Nomi:* ${channelName}\n`;
+        message += `*Linki:* @${channelLink}\n`;
+        message += `*Holati:* ${channel.channel_status ? 'Faol' : 'Faol emas'}\n`;
         message += `*Yaratilgan sanasi:* ${channel.createdAt.toISOString().split('T')[0]}\n`;
         message += `*Yangilangan sanasi:* ${channel.updatedAt.toISOString().split('T')[0]}\n`;
 
@@ -46,7 +52,10 @@ const updateChannelScene = new WizardScene(
             Markup.button.callback('Kanal holati', 'channel_status')
         ];
 
-        ctx.replyWithMarkdown(message, Markup.inlineKeyboard(updateButtons, { columns: 1 }).resize());
+        await ctx.reply(message, {
+            parse_mode: 'Markdown',
+            reply_markup: Markup.inlineKeyboard(updateButtons, { columns: 1 }).resize()
+        });
         return ctx.wizard.next();
     },
     async (ctx) => {
