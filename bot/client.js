@@ -195,7 +195,11 @@ bot.on(['text', 'photo', 'video'], async (ctx, next) => {
 
 bot.launch()
 
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+process.once('SIGINT', () => {
+    if (bot && bot.stop) bot.stop('SIGINT');
+});
+process.once('SIGTERM', () => {
+    if (bot && bot.stop) bot.stop('SIGTERM');
+});
 
 console.log('Bot is running...');

@@ -1,6 +1,5 @@
-const dotenv = require('dotenv');
-dotenv.config();
-const {Telegraf, Scenes, session} = require('telegraf');
+require('dotenv').config();
+const { Telegraf, Scenes, session } = require('telegraf');
 const loginScene = require('../scene/login.js');
 const {
     addGroupScene,
@@ -31,9 +30,9 @@ const ensureAuth = require('../middleware/ensure-auth.js');
 const db = require('../model/index.js');
 const User = db.users;
 
-const {commandGroupButtons, commandChannelButtons} = require("../keyboards/index.js");
-const {setCommands} = require("../commands/index.js");
-const {removeKeyboard} = require("telegraf/markup");
+const { commandGroupButtons, commandChannelButtons } = require("../keyboards/index.js");
+const { setCommands } = require("../commands/index.js");
+const { removeKeyboard } = require("telegraf/markup");
 
 bot.use(session());
 bot.use(stage.middleware());
@@ -65,7 +64,7 @@ bot.command('login', async (ctx) => {
         ctx.scene.leave();
     }
 
-    if (user && !user.token || !user) {
+    if (user && (!user.token || !user)) {
         ctx.scene.enter('loginScene');
     } else if (user && user.token) {
         ctx.reply('Siz tizimga kirgansiz!', removeKeyboard());
@@ -97,7 +96,7 @@ bot.command('logout', async (ctx) => {
         user.token = null;
         await user.save();
 
-        ctx.reply("Tizimdan chiqdingiz, qayta kirish uchun /login buyrug'idan foydalaning!", removeKeyboard())
+        ctx.reply("Tizimdan chiqdingiz, qayta kirish uchun /login buyrug'idan foydalaning!", removeKeyboard());
     }
 });
 
@@ -115,7 +114,11 @@ bot.catch((err, ctx) => {
 
 bot.launch();
 
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+process.once('SIGINT', () => {
+    if (bot && bot.stop) bot.stop('SIGINT');
+});
+process.once('SIGTERM', () => {
+    if (bot && bot.stop) bot.stop('SIGTERM');
+});
 
 console.log('Bot is running...');
