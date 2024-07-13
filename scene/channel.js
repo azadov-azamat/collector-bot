@@ -25,9 +25,7 @@ const updateChannelScene = new WizardScene(
     async (ctx) => {
         await ctx.deleteMessage();
         const callbackData = ctx.callbackQuery.data;
-        console.log("callbackData", callbackData);
         const channelId = callbackData.split('_')[1];
-        console.log("channelId", channelId);
         ctx.wizard.state.data.id = channelId;
         const channel = await Channel.findByPk(channelId);
 
@@ -52,10 +50,7 @@ const updateChannelScene = new WizardScene(
             Markup.button.callback('Kanal holati', 'channel_status')
         ];
 
-        await ctx.reply(message, {
-            parse_mode: 'Markdown',
-            reply_markup: Markup.inlineKeyboard(updateButtons, { columns: 1 }).resize()
-        });
+        ctx.replyWithMarkdown(message, Markup.inlineKeyboard(updateButtons, { columns: 1 }).resize());
         return ctx.wizard.next();
     },
     async (ctx) => {
