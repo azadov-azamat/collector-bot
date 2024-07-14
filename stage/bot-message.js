@@ -76,7 +76,7 @@ module.exports = function (bot) {
             owner_id: userId,
             file_id: fileId,
         };
-        console.log(pendingMessage)
+
        await Message.create(pendingMessage);
 
         if (messageType === 'text') {

@@ -25,8 +25,6 @@ async function setCommands(bot) {
 
 async function handleSendAdsToUsers(ctx, pendingMessage) {
 
-    console.log("pendingMessage", pendingMessage)
-    console.log("pendingMessage.mes ========== ", pendingMessage.message_id);
     const users = await User.findAll({
         where: {
             role: "user"
