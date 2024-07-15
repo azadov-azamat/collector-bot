@@ -27,7 +27,7 @@ async function checkUserMembership(ctx, userId, channels) {
     const results = {};
     for (const channel of channels) {
         let chatMember
-        console.log(channel);
+
         try {
             chatMember = await bot.telegram.getChatMember(`@${channel}`, userId);
         } catch (e) {
@@ -68,7 +68,7 @@ async function handleSubscriptionCheck(ctx, next) {
     if (group) {
         count = await Count.findOne({
             where: {
-                userId: userId,
+                userId: BigInt(userId),
                 groupId: group?.id,
             },
         });
@@ -79,7 +79,7 @@ async function handleSubscriptionCheck(ctx, next) {
     if (referrerId) {
         let refererCount = await Count.findOne({
             where: {
-                userId: referrerId,
+                userId: BigInt(referrerId),
                 groupId: group.id,
             },
         });
@@ -88,17 +88,22 @@ async function handleSubscriptionCheck(ctx, next) {
         await refererCount.save(); // Taklif qilgan user ning count ini oshirish
     }
 
-    if (!user) {
-        await User.create({
-            user_id: userId,
-            user_name: userName,
-            user_link: referralLink,
-        });
+    try {
+        if (!user) {
+            await User.create({
+                user_id: BigInt(userId),
+                user_name: userName,
+                user_link: referralLink,
+                role: 'user'
+            });
+        }
+    } catch (error) {
+        console.error('Error while creating user:', error);
     }
 
     let currentCount = await Count.findOne({
         where: {
-            userId,
+            userId: BigInt(userId),
             groupId: group.id,
         },
     });
@@ -106,7 +111,7 @@ async function handleSubscriptionCheck(ctx, next) {
     if (!currentCount) {
         count = await Count.create({
             user_count: 0,
-            userId,
+            userId: BigInt(userId),
             groupId: group.id,
         });
     } else {

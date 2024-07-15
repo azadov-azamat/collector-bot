@@ -167,7 +167,7 @@ const getChannels = async (ctx) => {
             ctx.reply('Kanallar topilmadi.');
             return;
         }
-        console.log("channels", channels)
+
         ctx.replyWithMarkdown('*Kanallar ro\'yxati:*\n \n');
 
         channels.forEach((channel ) => {
