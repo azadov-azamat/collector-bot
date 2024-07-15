@@ -3,6 +3,8 @@ dotenv.config();
 const db = require('../model');
 const {Telegraf, Markup} = require('telegraf');
 const LocalSession = require('telegraf-session-local');
+const {schedule} = require("node-cron");
+const {sendScheduledMessages} = require("../utils/functions");
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const Channel = db.channels;
@@ -192,6 +194,8 @@ bot.use(async (ctx, next) => {
 bot.on(['text', 'photo', 'video'], async (ctx, next) => {
     await handleSubscriptionCheck(ctx, next);
 });
+
+schedule('* * * * *', sendScheduledMessages);
 
 bot.launch()
 

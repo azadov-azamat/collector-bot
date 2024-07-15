@@ -29,6 +29,8 @@ sequelize
         console.log('Error' + err);
     });
 
+sequelize.sync();
+
 const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;

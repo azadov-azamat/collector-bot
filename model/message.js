@@ -1,30 +1,23 @@
 module.exports = (sequelize, DataTypes) => {
   return sequelize.define('messages', {
-    message_id: {
-      type: DataTypes.STRING,
-      allowNull: false
+    content: {
+      type: DataTypes.TEXT,
+      allowNull: false,
     },
-    chat_id: {
+    type: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
-    message_type: {
-      type: DataTypes.STRING,
-      allowNull: false
+    sendAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
     },
     owner_id: {
-      type: DataTypes.INTEGER,
-    },
-    file_id: {
-      type: DataTypes.STRING,
+      type: DataTypes.BIGINT,
     },
     sent: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
-    message_status: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
-    }
   });
 };
