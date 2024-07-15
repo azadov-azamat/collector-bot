@@ -12,10 +12,23 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: false,
     },
-    owner_id: {
+    ownerId: {
       type: DataTypes.BIGINT,
     },
+    chatId: {
+      type: DataTypes.TEXT,
+    },
+    messageId: {
+      type: DataTypes.TEXT,
+    },
+    url: {
+      type: DataTypes.TEXT,
+    },
     sent: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    status: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },

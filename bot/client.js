@@ -200,8 +200,9 @@ bot.on(['text', 'photo', 'video'], async (ctx, next) => {
     await handleSubscriptionCheck(ctx, next);
 });
 
-schedule('* * * * *', sendScheduledMessages);
-
+// schedule('* * * * *', sendScheduledMessages);
+// setTimeout(sendScheduledMessages, 1000);
+setInterval(()=> sendScheduledMessages(bot), 5000);
 bot.launch()
 
 process.once('SIGINT', () => {

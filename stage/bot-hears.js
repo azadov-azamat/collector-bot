@@ -2,7 +2,6 @@ const {getGroup} = require("../scene/group");
 const {getChannels} = require("../scene/channel");
 const {Markup} = require("telegraf");
 const db = require("../model");
-const {handleSendAdsToUsers} = require("../commands");
 
 const Message = db.messages;
 
@@ -47,17 +46,17 @@ module.exports = function (bot) {
         try {
             let currentAds = await Message.findOne({
                 where: {
-                    owner_id: Number(userId),
-                    message_status: false,
-                    chat_id: String(chatId)
+                    ownerId: userId,
+                    sent: false,
+                    chatId: String(chatId),
+                    status: false
                 }
             })
-            currentAds.message_status = true;
+
+            currentAds.status = true;
             await currentAds.save();
 
             await ctx.reply('Reklama saqlandi!', Markup.removeKeyboard());
-
-            await handleSendAdsToUsers(ctx, currentAds);
 
         } catch (err) {
             console.error(err);
@@ -73,9 +72,10 @@ module.exports = function (bot) {
         try {
             await Message.destroy({
                 where: {
-                    owner_id: userId,
-                    message_status: false,
-                    chat_id: chatId
+                    ownerId: userId,
+                    sent: false,
+                    status: false,
+                    chatId: String(chatId)
                 }
             })
 
