@@ -5,8 +5,8 @@ module.exports = function (bot) {
         try {
             clearMediaDirectory();
             await clearMessageTable();
-            await ctx.editMessageText('Barcha media fayllar va xabarlar o\'chirildi.');
             await ctx.deleteMessage();
+            await ctx.editMessageText('Barcha media fayllar va xabarlar o\'chirildi.');
         } catch (err) {
             console.error('Xatolik:', err);
             await ctx.editMessageText('O\'chirishda xatolik yuz berdi.');
