@@ -2,14 +2,13 @@ const {message} = require('telegraf/filters');
 const ensureAuth = require("../middleware/ensure-auth");
 const {commandChannelButtons} = require("../keyboards");
 const db = require("../model");
-const {Markup} = require("telegraf");
-const moment = require("moment");
 const fs = require('fs');
+const {saveMediaMessage, mediaDir} = require("../utils/functions");
+const axios = require("axios");
+const path = require('path');
 
 const Channel = db.channels;
 const Message = db.messages;
-
-// const BOT_ID = parseInt(process.env.BOT_TOKEN.split(':')[0], 10);
 
 module.exports = function (bot) {
 
@@ -51,76 +50,84 @@ module.exports = function (bot) {
 
     });
 
-    bot.on('message', ensureAuth(), async (ctx) => {
-        const userId = ctx.from.id;
-        const message = ctx.message;
-        const messageId = message.message_id;
-        const chatId = message.chat.id;
-        const messageType =
-            message.text ? 'text' :
-                message.photo ? 'photo' :
-                    message.video ? 'video' :
-                        message.audio ? 'audio' :
-                            message.voice ? 'voice' :
-                                message.video_note ? 'video_note' : 'other';
+    bot.on('voice', async (ctx) => {
+        const fileId = ctx.message.voice.file_id;
+        await saveMediaMessage(ctx, 'voice', fileId);
+    });
 
-        console.log(message);
+    bot.on('video_note', async (ctx) => {
+        const fileId = ctx.message.video_note.file_id;
+        await saveMediaMessage(ctx, 'video_note', fileId);
+    });
 
-        let fileUrl;
-        let fileId = ctx.message.text;
+    bot.on('video', async (ctx) => {
+        const fileId = ctx.message.video.file_id;
+        await saveMediaMessage(ctx, 'video', fileId);
+    });
 
-        if (message.photo) {
-            fileId = ctx.message.photo[ctx.message.photo.length - 1].file_id;
-        } else if (message.video) {
-            fileId = message.video.file_id;
-        } else if (message.audio) {
-            fileId = message.audio.file_id;
-        } else if (message.voice) {
-            fileId = message.voice.file_id;
-        } else if (message.video_note) {
-            fileId = message.video_note.file_id;
-        }
+    bot.on('audio', async (ctx) => {
+        const fileId = ctx.message.audio.file_id;
+        await saveMediaMessage(ctx, 'audio', fileId);
+    });
 
-        if (!message.text) {
-            fileUrl = await bot.telegram.getFileLink(fileId);
-        }
+    bot.on('photo', async (ctx) => {
+        const fileId = ctx.message.photo[ctx.message.photo.length - 1].file_id; // Eng yuqori sifatli rasmni olish
+        const caption = ctx.message.caption;
+        await saveMediaMessage(ctx, 'photo', fileId, caption);
+    });
 
-        const sendAt = moment("2024-07-15 12:00", 'YYYY-MM-DD HH:mm').toDate();
+    bot.on('text', async (ctx) => {
+        const textContent = ctx.message.text;
+        await saveMediaMessage(ctx, 'text', null, textContent);
+    });
 
-        let pendingMessage = {
-            content: fileId,
+    bot.on('location', async (ctx) => {
+        const location = ctx.message.location;
+        await saveMediaMessage(ctx, 'location', null, null, location);
+    });
+
+    bot.on('poll', async (ctx) => {
+        const poll = ctx.message.poll;
+        const pollQuestion = poll.question;
+        const pollOptions = poll.options.map(option => option.text);
+        await saveMediaMessage(ctx, 'poll', null, null, null, pollQuestion, pollOptions);
+    });
+
+    bot.on('document', async (ctx) => {
+        const fileId = ctx.message.document.file_id;
+        const fileName = ctx.message.document.file_name;
+        const caption = ctx.message.caption;
+        const filePath = path.join(mediaDir, fileName);
+
+        const fileUrl = await ctx.telegram.getFileLink(fileId);
+
+        const response = await axios({
             url: fileUrl.href,
-            type: messageType,
-            sendAt,
-            chatId,
-            messageId,
-            status: false,
-            ownerId: userId,
-            caption: message.caption || ''
-        };
+            method: 'GET',
+            responseType: 'stream'
+        });
 
-        await Message.create(pendingMessage);
+        await new Promise((resolve, reject) => {
+            response.data.pipe(fs.createWriteStream(filePath))
+                .on('finish', resolve)
+                .on('error', reject);
+        });
 
-        if (messageType === 'text') {
-            await ctx.reply(message.text);
-        } else if (messageType === 'photo') {
-            await ctx.replyWithPhoto(fileId, {caption: message.caption || ''});
-        } else if (messageType === 'video') {
-            await ctx.replyWithVideo(fileId, {caption: message.caption || ''});
-        } else if (messageType === 'audio') {
-            await ctx.replyWithAudio(fileId, {caption: message.caption || ''});
-        } else if (messageType === 'voice') {
-            await ctx.replyWithVoice(fileId, {caption: message.caption || ''});
-        } else if (messageType === 'video_note') {
-            await ctx.replyWithVideoNote(fileId, {caption: message.caption || ''});
-        }
+        await saveMediaMessage(ctx, 'document', fileId, caption, null, null, null, filePath);
+    });
 
-        await ctx.reply(
-            'Reklama ma\'lumotlari to\'g\'rimi?',
-            Markup.keyboard([
-                ['Toʻgʻri', 'Notoʻgʻri']
-            ]).oneTime().resize()
-        );
+    bot.action(/confirm_(\d+)/, async (ctx) => {
+        const messageId = ctx.match[1];
+        await Message.update({ status: true }, { where: { id: messageId } });
+        await ctx.deleteMessage();
+        ctx.reply('Xabar saqlandi.');
+    });
+
+    bot.action(/reject_(\d+)/, async (ctx) => {
+        const messageId = ctx.match[1];
+        await Message.destroy({ where: { id: messageId } });
+        await ctx.deleteMessage();
+        ctx.reply('Xabar rad etildi.');
     });
 
     bot.catch((err, ctx) => {

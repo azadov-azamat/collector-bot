@@ -1,22 +1,22 @@
 const dotenv = require('dotenv');
 dotenv.config();
+
 const db = require("../model");
 const Message = db.messages;
 const User = db.users;
-const {Sequelize} = require("sequelize");
-const {Telegraf} = require("telegraf");
+const {Markup} = require("telegraf");
+const axios = require("axios");
+const path = require('path');
+const fs = require('fs');
 
-// const clientBot = new Telegraf(process.env.BOT_TOKEN, { polling: true });
+const mediaDir = path.join(__dirname, 'media');
+if (!fs.existsSync(mediaDir)) {
+    fs.mkdirSync(mediaDir);
+}
 
-async function sendScheduledMessages(clientBot) {
+async function sendScheduledMessages(bot) {
     const messages = await Message.findAll({
-        where: {
-            // sendAt: {
-            //     [Sequelize.Op.lte]: new Date(),
-            // },
-            sent: false,
-            status: true
-        },
+        where: {send: false, status: true},
     });
 
     const users = await User.findAll({where: {role: 'user'}});
@@ -24,35 +24,131 @@ async function sendScheduledMessages(clientBot) {
     for (const message of messages) {
         for (const user of users) {
             try {
-                const options = {caption: message.caption || ''};
+                const options = {caption: message.textContent || ''};
 
-                switch (message.type) {
-                    case 'text':
-                        await clientBot.telegram.sendMessage(user.user_id, message.content);
-                        break;
-                    case 'photo':
-                        await clientBot.telegram.sendPhoto(user.user_id, message.url, options);
-                        break;
-                    case 'video':
-                        await clientBot.telegram.sendVideo(user.user_id, message.url, options);
-                        break;
-                    case 'audio':
-                        await clientBot.telegram.sendAudio(user.user_id, message.url, options);
-                        break;
+                switch (message.messageType) {
                     case 'voice':
-                        await clientBot.telegram.sendVoice(user.user_id, message.url, options);
+                        await bot.telegram.sendVoice(user.user_id, {source: message.filePath}, options);
                         break;
                     case 'video_note':
-                        await clientBot.telegram.sendVideoNote(user.user_id, message.url);
+                        await bot.telegram.sendVideoNote(user.user_id, {source: message.filePath}, options);
+                        break;
+                    case 'video':
+                        await bot.telegram.sendVideo(user.user_id, {source: message.filePath}, options);
+                        break;
+                    case 'audio':
+                        await bot.telegram.sendAudio(user.user_id, {source: message.filePath}, options);
+                        break;
+                    case 'photo':
+                        await bot.telegram.sendPhoto(user.user_id, {source: message.filePath}, options);
+                        break;
+                    case 'text':
+                        await bot.telegram.sendMessage(user.user_id, message.textContent);
+                        break;
+                    case 'location':
+                        await bot.telegram.sendLocation(user.user_id, message.location.latitude, message.location.longitude);
+                        break;
+                    case 'poll':
+                        await bot.telegram.sendPoll(user.user_id, message.pollQuestion, message.pollOptions);
+                        break;
+                    case 'document':
+                        await bot.telegram.sendDocument(user.user_id, { source: message.filePath }, options);
                         break;
                     default:
-                        console.error(`Aniqlanmagan type: ${message.type}`);
+                        console.error('Noma`lum media turi.');
                 }
+
             } catch (error) {
                 console.error(`Failed to send message to user ${user.user_id}:`, error);
             }
         }
+        await Message.update({send: true}, {where: {id: message.id}});
     }
 }
 
-module.exports = {sendScheduledMessages}
+async function saveMediaMessage(ctx, messageType, fileId = null, textContent = null, location = null, pollQuestion = null, pollOptions = null, filePath = null) {
+    if (fileId && !filePath) {
+        const fileUrl = await ctx.telegram.getFileLink(fileId);
+        filePath = path.join(mediaDir, `${fileId}.${messageType}`);
+
+        const response = await axios({
+            url: fileUrl.href,
+            method: 'GET',
+            responseType: 'stream'
+        });
+
+        await new Promise((resolve, reject) => {
+            response.data.pipe(fs.createWriteStream(filePath))
+                .on('finish', resolve)
+                .on('error', reject);
+        });
+    }
+    const message = await Message.create({
+        userId: ctx.from.id,
+        messageType: messageType,
+        fileId: fileId,
+        filePath: filePath,
+        textContent: textContent,
+        location: location,
+        pollQuestion: pollQuestion,
+        pollOptions: pollOptions
+    });
+
+    ctx.reply(`${messageTypes(messageType)} xabar saqlandi! Xabarni tekshiring.`, Markup.inlineKeyboard([
+        Markup.button.callback('To\'g\'ri', `confirm_${message.id}`),
+        Markup.button.callback('Noto\'g\'ri', `reject_${message.id}`)
+    ]));
+}
+
+function messageTypes(type) {
+    let messageText;
+    switch (type) {
+        case 'voice':
+            messageText = 'Ovozli';
+            break;
+        case 'video_note':
+            messageText = 'Video';
+            break;
+        case 'video':
+            messageText = 'Video';
+            break;
+        case 'audio':
+            messageText = 'Audio';
+            break;
+        case 'photo':
+            messageText = 'Rasm';
+            break;
+        case 'text':
+            messageText = 'Matnli';
+            break;
+        case 'location':
+            messageText = 'Joylashuv';
+            break;
+        case 'poll':
+            messageText = 'So\'rovnoma';
+            break;
+        case 'document':
+            messageText = 'Fayl';
+            break;
+        case 'group_status':
+        case 'channel_status':
+            messageText = 'holat';
+            break;
+        case 'group_link':
+        case 'channel_link':
+            messageText = 'havola';
+            break;
+        case 'group_count':
+            messageText = 'a\'zolar soni';
+            break;
+        case 'group_name':
+        case 'channel_name':
+            messageText = 'nom';
+            break;
+        default:
+            messageText = type;
+    }
+    return messageText;
+}
+
+module.exports = {sendScheduledMessages, saveMediaMessage, messageTypes, mediaDir}

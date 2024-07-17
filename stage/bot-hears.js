@@ -38,50 +38,16 @@ module.exports = function (bot) {
         ctx.scene.enter('deleteChannelScene');
     });
 
-    bot.hears('Toʻgʻri', async (ctx) => {
-        const message = ctx.message;
-        const userId = ctx.from.id;
-        const chatId = message.chat.id;
-
-        try {
-            let currentAds = await Message.findOne({
-                where: {
-                    ownerId: userId,
-                    sent: false,
-                    chatId: String(chatId),
-                    status: false
-                }
-            })
-
-            currentAds.status = true;
-            await currentAds.save();
-
-            await ctx.reply('Reklama saqlandi!', Markup.removeKeyboard());
-
-        } catch (err) {
-            console.error(err);
-            await ctx.reply('Xato yuz berdi, qaytadan urinib ko‘ring.', Markup.removeKeyboard());
-        }
+    bot.hears(/To'g'ri (\d+)/, async (ctx) => {
+        const messageId = ctx.match[1];
+        await Message.update({ status: true }, { where: { id: messageId } });
+        await ctx.reply('Xabar saqlandi.');
     });
 
-    bot.hears('Notoʻgʻri', async (ctx) => {
-        const userId = ctx.from.id;
-        const message = ctx.message;
-        const chatId = message.chat.id;
-
-        try {
-            await Message.destroy({
-                where: {
-                    ownerId: userId,
-                    sent: false,
-                    status: false,
-                    chatId: String(chatId)
-                }
-            })
-
-            await ctx.reply('Reklama saqlash bekor qilindi.', Markup.removeKeyboard());
-        } catch (e) {
-            console.log("Error: ", e);
-        }
+    bot.hears(/Noto'g'ri (\d+)/, async (ctx) => {
+        const messageId = ctx.match[1];
+        await Message.destroy({ where: { id: messageId } });
+        await ctx.reply('Xabar rad etildi.');
     });
+
 }

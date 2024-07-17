@@ -1,6 +1,7 @@
 const { Scenes, Markup} = require('telegraf');
 const db = require('../model');
 const { commandChannelButtons} = require("../keyboards");
+const {messageTypes} = require("../utils/functions");
 const Channel = db.channels;
 
 const { WizardScene } = Scenes;
@@ -65,7 +66,7 @@ const updateChannelScene = new WizardScene(
             ];
             await ctx.reply('Kanal holatini tanlang:', Markup.inlineKeyboard(statusButtons).resize());
         } else {
-            await ctx.reply(`Iltimos, yangi ${fieldToUpdate} ni kiriting:`);
+            await ctx.reply(`Iltimos, yangi ${messageTypes(fieldToUpdate)} ni kiriting:`);
         }
         return ctx.wizard.next();
     },
@@ -84,7 +85,7 @@ const updateChannelScene = new WizardScene(
 
         try {
             await Channel.update(updateData, { where: { id } });
-            ctx.reply(`Kanal ${fieldToUpdate} muvaffaqiyatli yangilandi.`, commandChannelButtons);
+            ctx.reply(`Kanal ${messageTypes(fieldToUpdate)} muvaffaqiyatli yangilandi.`, commandChannelButtons);
         } catch (error) {
             console.log(error);
             ctx.reply('Botda nosozlik.', commandChannelButtons);

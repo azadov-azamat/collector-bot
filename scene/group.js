@@ -2,25 +2,26 @@ const { Scenes, Markup} = require('telegraf');
 const db = require('../model');
 const {commandGroupButtons} = require("../keyboards");
 const {removeKeyboard} = require("telegraf/markup");
+const {messageTypes} = require("../utils/functions");
 const Group = db.groups;
 
 const { WizardScene } = Scenes;
 
 const addGroupScene = new WizardScene(
     'addGroupScene',
-    (ctx) => {
-        ctx.reply('Iltimos, guruh nomini kiriting:', removeKeyboard());
+    async (ctx) => {
+        await ctx.reply('Iltimos, guruh nomini kiriting:', removeKeyboard());
         ctx.wizard.state.data = {};
         return ctx.wizard.next();
     },
-    (ctx) => {
+    async (ctx) => {
         ctx.wizard.state.data.group_name = ctx.message.text;
-        ctx.reply('Iltimos, guruh linkini kiriting:');
+        await ctx.reply('Iltimos, guruh linkini kiriting:');
         return ctx.wizard.next();
     },
-    (ctx) => {
+    async (ctx) => {
         ctx.wizard.state.data.group_link = ctx.message.text;
-        ctx.reply('Iltimos, guruh a\'zolari sonini kiriting:');
+        await ctx.reply('Iltimos, guruh a\'zolari sonini kiriting:');
         return ctx.wizard.next();
     },
     async (ctx) => {
@@ -30,7 +31,7 @@ const addGroupScene = new WizardScene(
         try {
             const group = await Group.findOne({ where: { group_link: group_link } });
             if (group) {
-                ctx.reply('Berilgan link oldin qo\'shilgan! Tekshirib qayta urinib ko\'ring');
+                await ctx.reply('Berilgan link oldin qo\'shilgan! Tekshirib qayta urinib ko\'ring');
                 return ctx.scene.leave();
             }
 
@@ -45,11 +46,11 @@ const addGroupScene = new WizardScene(
                 group_count,
             });
 
-            ctx.reply('Guruhni muvoffaqiyatli qo\'shdingiz!');
-            ctx.reply('Kerakli bo\'limni tanlang', commandGroupButtons);
+            await ctx.reply('Guruhni muvoffaqiyatli qo\'shdingiz!');
+            await ctx.reply('Kerakli bo\'limni tanlang', commandGroupButtons);
         } catch (error) {
             console.log(error);
-            ctx.reply('Botda nosozlik');
+            await ctx.reply('Botda nosozlik');
         }
 
         return ctx.scene.leave();
@@ -85,7 +86,7 @@ const updateGroupScene = new WizardScene(
     async (ctx) => {
         const groups = await Group.findAll();
         if (!groups.length) {
-            ctx.reply('Guruhlar topilmadi.');
+            await ctx.reply('Guruhlar topilmadi.');
             return ctx.scene.leave();
         }
         const buttons = groups.map((group) => Markup.button.callback(group.group_name, `select_${group.id}`));
@@ -123,7 +124,7 @@ const updateGroupScene = new WizardScene(
             Markup.button.callback('Guruh holati', 'group_status')
         ];
 
-        ctx.replyWithMarkdown(message, Markup.inlineKeyboard(updateButtons, { columns: 1 }).resize());
+        await ctx.replyWithMarkdown(message, Markup.inlineKeyboard(updateButtons, { columns: 1 }).resize());
         return ctx.wizard.next();
     },
     async (ctx) => {
@@ -138,7 +139,7 @@ const updateGroupScene = new WizardScene(
             ];
             await ctx.reply('Guruh holatini tanlang:', Markup.inlineKeyboard(statusButtons).resize());
         } else {
-            await ctx.reply(`Iltimos, yangi ${fieldToUpdate} ni kiriting:`);
+            await ctx.reply(`Iltimos, yangi ${messageTypes(fieldToUpdate)} ni kiriting:`);
         }
         return ctx.wizard.next();
     },
@@ -157,7 +158,7 @@ const updateGroupScene = new WizardScene(
 
         try {
             await Group.update(updateData, { where: { id } });
-            ctx.reply(`Guruh ${fieldToUpdate} muvaffaqiyatli yangilandi`, commandGroupButtons);
+            ctx.reply(`${messageTypes(fieldToUpdate)} muvaffaqiyatli yangilandi`, commandGroupButtons);
         } catch (error) {
             console.log(error);
             ctx.reply('Botda nosozlik', commandGroupButtons);
