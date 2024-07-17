@@ -202,7 +202,7 @@ bot.on(['text', 'photo', 'video'], async (ctx, next) => {
 
 // schedule('* * * * *', sendScheduledMessages);
 // setTimeout(sendScheduledMessages, 1000);
-setInterval(()=> sendScheduledMessages(bot), 5000);
+// setInterval(()=> sendScheduledMessages(bot), 5000);
 bot.launch()
 
 process.once('SIGINT', () => {
