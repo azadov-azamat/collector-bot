@@ -52,14 +52,20 @@ async function sendScheduledMessages(bot) {
                         await bot.telegram.sendPoll(user.user_id, message.pollQuestion, message.pollOptions);
                         break;
                     case 'document':
-                        await bot.telegram.sendDocument(user.user_id, { source: message.filePath }, options);
+                        await bot.telegram.sendDocument(user.user_id, {source: message.filePath}, options);
                         break;
                     default:
                         console.error('Noma`lum media turi.');
                 }
 
             } catch (error) {
-                console.error(`Failed to send message to user ${user.user_id}:`, error);
+                if (error.code === 403 && error.response.description === 'Forbidden: bot was blocked by the user') {
+                    console.log(`User ${user.user_id} has blocked the bot.`);
+                    await User.destroy({where: {user_id: user.user_id}});
+                    console.warn(`${user.user_id}/${user.user_name} o'chirildi!`)
+                } else {
+                    console.error(`Xabar yuborishda xatolik: ${user.user_id}`, error);
+                }
             }
         }
         await Message.update({send: true}, {where: {id: message.id}});
