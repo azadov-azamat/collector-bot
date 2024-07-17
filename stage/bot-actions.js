@@ -1,4 +1,6 @@
 const {clearMediaDirectory, clearMessageTable} = require("../utils/functions");
+const db = require("../model");
+const Message = db.messages;
 
 module.exports = function (bot) {
     bot.action('confirm_clear_all', async (ctx) => {
