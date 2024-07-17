@@ -7,7 +7,6 @@ module.exports = function (bot) {
         try {
             clearMediaDirectory();
             await clearMessageTable();
-            await ctx.deleteMessage();
             await ctx.editMessageText('Barcha media fayllar va xabarlar o\'chirildi.');
         } catch (err) {
             console.error('Xatolik:', err);
@@ -16,8 +15,7 @@ module.exports = function (bot) {
     });
 
     bot.action('cancel_clear_all', async (ctx) => {
-        await ctx.deleteMessage();
-        await ctx.editMessageText('O\'chirish bekor qilindi.');
+        await ctx.editMessageText('Tozalash bekor qilindi.');
     });
 
     bot.action(/confirm_(\d+)/, async (ctx) => {
