@@ -16,6 +16,7 @@ async function setCommands(bot) {
         {command: 'channels', description: "Kanallaringiz"},
         {command: 'ads', description: "E'lonlar"},
         {command: 'help', description: "Yordam olish"},
+        {command: 'clear_ads', description: "Yuklangan reklamalarni o'chirish"},
         {command: 'logout', description: "Tizimdan chiqish"},
     ].filter(Boolean);
 

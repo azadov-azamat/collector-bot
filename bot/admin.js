@@ -33,6 +33,7 @@ const User = db.users;
 const { commandGroupButtons, commandChannelButtons } = require("../keyboards/index.js");
 const { setCommands } = require("../commands/index.js");
 const { removeKeyboard } = require("telegraf/markup");
+const {commandClearAds} = require("../keyboards");
 
 bot.use(session());
 bot.use(stage.middleware());
@@ -88,6 +89,10 @@ bot.command('help', (ctx) => {
     ctx.reply('Muammo bo\'yicha @azamat_azadov bilan bog\'laning', removeKeyboard());
 });
 
+bot.command('clear_ads', async (ctx) => {
+    await ctx.reply('Barcha media fayllar va xabarlarni o\'chirishni tasdiqlaysizmi?', commandClearAds);
+});
+
 bot.command('logout', async (ctx) => {
     const userId = ctx.from.id; // Telegram foydalanuvchi IDsi
     const user = await User.findByPk(userId);
@@ -102,6 +107,7 @@ bot.command('logout', async (ctx) => {
 
 require('../stage/bot-hears.js')(bot);
 require('../stage/bot-message.js')(bot);
+require('../stage/bot-actions.js')(bot);
 
 bot.catch((err, ctx) => {
     console.log(err);

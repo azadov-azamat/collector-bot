@@ -14,6 +14,24 @@ if (!fs.existsSync(mediaDir)) {
     fs.mkdirSync(mediaDir);
 }
 
+function clearMediaDirectory() {
+    const mediaDir = path.join(__dirname, 'media');
+    fs.readdir(mediaDir, (err, files) => {
+        if (err) throw err;
+        for (const file of files) {
+            fs.unlink(path.join(mediaDir, file), err => {
+                if (err) throw err;
+            });
+        }
+    });
+}
+
+async function clearMessageTable() {
+    await Message.destroy({
+        where: {},
+        truncate: true
+    });
+}
 async function sendScheduledMessages(bot) {
     const messages = await Message.findAll({
         where: {send: false, status: true},
@@ -157,4 +175,11 @@ function messageTypes(type) {
     return messageText;
 }
 
-module.exports = {sendScheduledMessages, saveMediaMessage, messageTypes, mediaDir}
+module.exports = {
+    sendScheduledMessages,
+    saveMediaMessage,
+    messageTypes,
+    mediaDir,
+    clearMediaDirectory,
+    clearMessageTable
+}

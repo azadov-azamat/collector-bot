@@ -8,7 +8,6 @@ const axios = require("axios");
 const path = require('path');
 
 const Channel = db.channels;
-const Message = db.messages;
 
 module.exports = function (bot) {
 
@@ -16,26 +15,14 @@ module.exports = function (bot) {
         await ctx.replyWithChatAction('typing');
         let {chat_id: chatId} = ctx.update.message.chat_shared;
 
-        // let admins;
         let channel;
-        // let user;
 
         try {
             channel = await ctx.telegram.getChat(chatId);
-            // admins = await ctx.telegram.getChatAdministrators(chatId);
-            // user = await ctx.telegram.getChatMember(chatId, BOT_ID);
         } catch (e) {
             return ctx.reply("Admin botni tanlangan kanalda admin ekanlikini tekshiring", commandChannelButtons);
         }
-        // console.log(user)
-        // console.log(BOT_ID)
-        // admins.find(({user}) => console.log(user))
-        //
-        // let botAdminInfo = admins.find(({user}) => user.id === BOT_ID);
-        //
-        // if (!botAdminInfo) {
-        //     return ctx.reply("Asosiy botni tanlangan kanalda admin ekanlikini tekshiring", commandChannelButtons);
-        // }
+
         let exist = await Channel.findOne({where: {channel_link: channel.username}});
 
         if (!exist) {
@@ -116,21 +103,4 @@ module.exports = function (bot) {
         await saveMediaMessage(ctx, 'document', fileId, caption, null, null, null, filePath);
     });
 
-    bot.action(/confirm_(\d+)/, async (ctx) => {
-        const messageId = ctx.match[1];
-        await Message.update({ status: true }, { where: { id: messageId } });
-        await ctx.deleteMessage();
-        ctx.reply('Xabar saqlandi.');
-    });
-
-    bot.action(/reject_(\d+)/, async (ctx) => {
-        const messageId = ctx.match[1];
-        await Message.destroy({ where: { id: messageId } });
-        await ctx.deleteMessage();
-        ctx.reply('Xabar rad etildi.');
-    });
-
-    bot.catch((err, ctx) => {
-        console.log(`Encountered an error for ${ctx.updateType}`, err);
-    });
 };

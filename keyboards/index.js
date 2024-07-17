@@ -10,5 +10,9 @@ const commandChannelButtons = Markup.keyboard([
     ['Kanal o\'chirish', 'Kanallar ro\'yhati']
 ]).resize();
 
+const commandClearAds = Markup.inlineKeyboard([
+    Markup.button.callback('Tasdiqlash', 'confirm_clear_all'),
+    Markup.button.callback('Bekor qilish', 'cancel_clear_all')
+])
 
-module.exports = {commandGroupButtons, commandChannelButtons};
+module.exports = {commandGroupButtons, commandChannelButtons, commandClearAds};
