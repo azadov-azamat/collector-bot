@@ -1,6 +1,6 @@
 const { Scenes, Markup} = require('telegraf');
 const db = require('../model');
-const { commandChannelButtons} = require("../keyboards");
+const { commandChannelButtons, commandDeleteButton, commandUpdateStatusButton} = require("../keyboards");
 const {messageTypes} = require("../utils/functions");
 const Channel = db.channels;
 
@@ -60,11 +60,7 @@ const updateChannelScene = new WizardScene(
         ctx.wizard.state.data.fieldToUpdate = fieldToUpdate;
 
         if (fieldToUpdate === 'channel_status') {
-            const statusButtons = [
-                Markup.button.callback('Aktivlashtirish', 'status_active'),
-                Markup.button.callback('Faolsizlashtirish', 'status_inactive')
-            ];
-            await ctx.reply('Kanal holatini tanlang:', Markup.inlineKeyboard(statusButtons).resize());
+            await ctx.reply('Kanal holatini tanlang:', commandUpdateStatusButton);
         } else {
             await ctx.reply(`Iltimos, yangi ${messageTypes(fieldToUpdate)} ni kiriting:`);
         }
@@ -72,6 +68,7 @@ const updateChannelScene = new WizardScene(
     },
     async (ctx) => {
         let newValue;
+        await ctx.deleteMessage();
         const { id, fieldToUpdate } = ctx.wizard.state.data;
 
         if (fieldToUpdate === 'channel_status') {
@@ -107,7 +104,7 @@ const deleteChannelScene = new WizardScene(
         }
         const buttons = channels.map((channel) => Markup.button.callback(channel.channel_name, `select_${channel.id}`));
         await ctx.reply('Iltimos, o\'chirmoqchi bo\'lgan kanalni tanlang:', Markup.removeKeyboard());
-        await ctx.reply('Kanalni tanlang:', Markup.inlineKeyboard(buttons).resize());
+        await ctx.reply('Kanallar ro\'yhati:', Markup.inlineKeyboard(buttons).resize());
         ctx.wizard.state.data = {};
         return ctx.wizard.next();
     },
@@ -129,13 +126,8 @@ const deleteChannelScene = new WizardScene(
         message += `*Yaratilgan sanasi:* ${channel.createdAt.toISOString().split('T')[0]}\n`;
         message += `*Yangilangan sanasi:* ${channel.updatedAt.toISOString().split('T')[0]}\n`;
 
-        const deleteButton = Markup.inlineKeyboard([
-            Markup.button.callback('Tasdiqlash', 'confirm_delete'),
-            Markup.button.callback('Bekor qilish', 'cancel_delete')
-        ]).resize();
-
         await ctx.replyWithMarkdown(message);
-        await ctx.reply('Iltimos, kanalni o\'chirishni tasdiqlang:', deleteButton);
+        await ctx.reply('Iltimos, kanalni o\'chirishni tasdiqlang:', commandDeleteButton);
         return ctx.wizard.next();
     },
     async (ctx) => {

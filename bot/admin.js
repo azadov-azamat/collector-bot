@@ -31,14 +31,22 @@ const db = require('../model/index.js');
 const User = db.users;
 
 const { commandGroupButtons, commandChannelButtons } = require("../keyboards/index.js");
-const { setCommands } = require("../commands/index.js");
+const { setAdminCommands } = require("../commands/index.js");
 const { removeKeyboard } = require("telegraf/markup");
 const {commandClearAds} = require("../keyboards");
 
 bot.use(session());
 bot.use(stage.middleware());
 
-setCommands(bot);
+bot.use(async (ctx, next) => {
+    // Typing actionni yuborish
+    if (ctx.chat) {
+        await bot.telegram.sendChatAction(ctx.chat.id, 'typing');
+    }
+    return next();
+});
+
+setAdminCommands(bot);
 
 bot.start(async (ctx) => {
     const userId = ctx.from.id; // Telegram foydalanuvchi IDsi

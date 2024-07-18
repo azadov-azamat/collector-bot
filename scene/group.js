@@ -1,6 +1,6 @@
 const { Scenes, Markup} = require('telegraf');
 const db = require('../model');
-const {commandGroupButtons} = require("../keyboards");
+const {commandGroupButtons, commandDeleteButton, commandUpdateStatusButton} = require("../keyboards");
 const {removeKeyboard} = require("telegraf/markup");
 const {messageTypes} = require("../utils/functions");
 const Group = db.groups;
@@ -133,11 +133,7 @@ const updateGroupScene = new WizardScene(
         ctx.wizard.state.data.fieldToUpdate = fieldToUpdate;
 
         if (fieldToUpdate === 'group_status') {
-            const statusButtons = [
-                Markup.button.callback('Aktivlashtirish', 'status_active'),
-                Markup.button.callback('Faolsizlashtirish', 'status_inactive')
-            ];
-            await ctx.reply('Guruh holatini tanlang:', Markup.inlineKeyboard(statusButtons).resize());
+            await ctx.reply('Guruh holatini tanlang:', commandUpdateStatusButton);
         } else {
             await ctx.reply(`Iltimos, yangi ${messageTypes(fieldToUpdate)} ni kiriting:`);
         }
@@ -145,6 +141,7 @@ const updateGroupScene = new WizardScene(
     },
     async (ctx) => {
         let newValue;
+        await ctx.deleteMessage();
         const { id, fieldToUpdate } = ctx.wizard.state.data;
 
         if (fieldToUpdate === 'group_status') {
@@ -158,10 +155,10 @@ const updateGroupScene = new WizardScene(
 
         try {
             await Group.update(updateData, { where: { id } });
-            ctx.reply(`${messageTypes(fieldToUpdate)} muvaffaqiyatli yangilandi`, commandGroupButtons);
+            await ctx.reply(`${messageTypes(fieldToUpdate)} muvaffaqiyatli yangilandi`, commandGroupButtons);
         } catch (error) {
             console.log(error);
-            ctx.reply('Botda nosozlik', commandGroupButtons);
+            await ctx.reply('Botda nosozlik', commandGroupButtons);
         }
         return ctx.scene.leave();
     }
@@ -180,7 +177,7 @@ const deleteGroupScene = new Scenes.WizardScene(
         }
         const buttons = groups.map((group) => [Markup.button.callback(group.group_name, `select_${group.id}`)]);
         await ctx.reply('Iltimos, o\'chirmoqchi bo\'lgan guruhni tanlang:', Markup.removeKeyboard());
-        await ctx.reply('Guruhni tanlang:', Markup.inlineKeyboard(buttons).resize());
+        await ctx.reply('Guruhlar ro\'yhati', Markup.inlineKeyboard(buttons).resize());
         ctx.wizard.state.data = {};
         return ctx.wizard.next();
     },
@@ -204,13 +201,8 @@ const deleteGroupScene = new Scenes.WizardScene(
         message += `*Yaratilgan sanasi:* ${group.createdAt.toISOString().split('T')[0]}\n`;
         message += `*Yangilangan sanasi:* ${group.updatedAt.toISOString().split('T')[0]}\n`;
 
-        const deleteButton = Markup.inlineKeyboard([
-            Markup.button.callback('Tasdiqlash', 'confirm_delete'),
-            Markup.button.callback('Bekor qilish', 'cancel_delete')
-        ]).resize();
-
         await ctx.replyWithMarkdown(message);
-        await ctx.reply('Iltimos, guruhni o\'chirishni tasdiqlang:', deleteButton);
+        await ctx.reply('Iltimos, guruhni o\'chirishni tasdiqlang:', commandDeleteButton);
         return ctx.wizard.next();
     },
     async (ctx) => {
@@ -221,13 +213,13 @@ const deleteGroupScene = new Scenes.WizardScene(
 
             try {
                 await Group.destroy({ where: { id: groupId } });
-                ctx.reply('Guruh muvaffaqiyatli o\'chirildi', commandGroupButtons);
+                await ctx.reply('Guruh muvaffaqiyatli o\'chirildi', commandGroupButtons);
             } catch (error) {
                 console.log(error);
-                ctx.reply('Botda nosozlik');
+                await ctx.reply('Botda nosozlik');
             }
         } else if (callbackData === 'cancel_delete') {
-            ctx.reply('Guruhni o\'chirish bekor qilindi.', commandGroupButtons);
+            await ctx.reply('Guruhni o\'chirish bekor qilindi.', commandGroupButtons);
         }
         return ctx.scene.leave();
     }

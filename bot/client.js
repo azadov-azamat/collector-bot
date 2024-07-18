@@ -5,6 +5,7 @@ const {Telegraf, Markup} = require('telegraf');
 const LocalSession = require('telegraf-session-local');
 const {schedule} = require("node-cron");
 const {sendScheduledMessages} = require("../utils/functions");
+const {setClientCommands} = require("../commands");
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const Channel = db.channels;
@@ -40,6 +41,8 @@ async function checkUserMembership(ctx, userId, channels) {
     }
     return results;
 }
+
+setClientCommands(bot);
 
 bot.start(async (ctx) => {
     await handleSubscriptionCheck(ctx);
@@ -77,15 +80,17 @@ async function handleSubscriptionCheck(ctx, next) {
     }
 
     if (referrerId) {
-        let refererCount = await Count.findOne({
-            where: {
-                userId: BigInt(referrerId),
-                groupId: group.id,
-            },
-        });
+       if (!user) {
+           let refererCount = await Count.findOne({
+               where: {
+                   userId: BigInt(referrerId),
+                   groupId: group.id,
+               },
+           });
 
-        refererCount.user_count = Number(refererCount.user_count) + 1;
-        await refererCount.save(); // Taklif qilgan user ning count ini oshirish
+           refererCount.user_count = Number(refererCount.user_count) + 1;
+           await refererCount.save(); // Taklif qilgan user ning count ini oshirish
+       }
     }
 
     try {

@@ -12,7 +12,23 @@ const commandChannelButtons = Markup.keyboard([
 
 const commandClearAds = Markup.inlineKeyboard([
     Markup.button.callback('Tasdiqlash ✅', 'confirm_clear_all'),
-    Markup.button.callback('Bekor qilish', 'cancel_clear_all')
+    Markup.button.callback('Bekor qilish ❌️', 'cancel_clear_all')
 ])
 
-module.exports = {commandGroupButtons, commandChannelButtons, commandClearAds};
+const commandDeleteButton = Markup.inlineKeyboard([
+    Markup.button.callback('Tasdiqlash ✅', 'confirm_delete'),
+    Markup.button.callback('Bekor qilish ❌️', 'cancel_delete')
+]).resize();
+
+const commandUpdateStatusButton = Markup.inlineKeyboard([
+    Markup.button.callback('Aktivlashtirish ✅', 'status_active'),
+    Markup.button.callback('Faolsizlashtirish 🚫 ', 'status_inactive')
+]).resize();
+
+module.exports = {
+    commandGroupButtons,
+    commandChannelButtons,
+    commandClearAds,
+    commandDeleteButton,
+    commandUpdateStatusButton
+};
