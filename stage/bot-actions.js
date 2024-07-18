@@ -1,9 +1,10 @@
 const {clearMediaDirectory, clearMessageTable} = require("../utils/functions");
 const db = require("../model");
+const ensureAuth = require("../middleware/ensure-auth");
 const Message = db.messages;
 
 module.exports = function (bot) {
-    bot.action('confirm_clear_all', async (ctx) => {
+    bot.action('confirm_clear_all', ensureAuth(), async (ctx) => {
         try {
             clearMediaDirectory();
             await clearMessageTable();
@@ -14,20 +15,20 @@ module.exports = function (bot) {
         }
     });
 
-    bot.action('cancel_clear_all', async (ctx) => {
+    bot.action('cancel_clear_all',ensureAuth(), async (ctx) => {
         await ctx.editMessageText('Tozalash bekor qilindi.');
     });
 
-    bot.action(/confirm_(\d+)/, async (ctx) => {
+    bot.action(/confirm_(\d+)/, ensureAuth(), async (ctx) => {
         const messageId = ctx.match[1];
-        await Message.update({ status: true }, { where: { id: messageId } });
+        await Message.update({status: true}, {where: {id: messageId}});
         await ctx.deleteMessage();
         ctx.reply('Xabar saqlandi.');
     });
 
-    bot.action(/reject_(\d+)/, async (ctx) => {
+    bot.action(/reject_(\d+)/, ensureAuth(), async (ctx) => {
         const messageId = ctx.match[1];
-        await Message.destroy({ where: { id: messageId } });
+        await Message.destroy({where: {id: messageId}});
         await ctx.deleteMessage();
         ctx.reply('Xabar rad etildi.');
     });

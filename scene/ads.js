@@ -4,7 +4,7 @@ const Message = db.messages;
 
 const { WizardScene } = Scenes;
 
-const adsScene = new Scenes.WizardScene(
+const adsScene = new WizardScene(
     'adsScene',
     (ctx) => {
         ctx.reply('Iltimos, tarqatmoqchi bo\'lgan xabaringizni yuboring:');

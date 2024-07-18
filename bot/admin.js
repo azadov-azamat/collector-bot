@@ -89,7 +89,7 @@ bot.command('help', (ctx) => {
     ctx.reply('Muammo bo\'yicha @azamat_azadov bilan bog\'laning', removeKeyboard());
 });
 
-bot.command('clear_ads', async (ctx) => {
+bot.command('clear_ads', ensureAuth(), async (ctx) => {
     await ctx.reply('Barcha media fayllar va xabarlarni o\'chirishni tasdiqlaysizmi?', commandClearAds);
 });
 

@@ -33,61 +33,65 @@ async function clearMessageTable() {
     });
 }
 async function sendScheduledMessages(bot) {
-    const messages = await Message.findAll({
-        where: {send: false, status: true},
-    });
+  try {
+      const messages = await Message.findAll({
+          where: {send: false, status: true},
+      });
 
-    const users = await User.findAll({where: {role: 'user'}});
+      const users = await User.findAll({where: {role: 'user'}});
 
-    for (const message of messages) {
-        for (const user of users) {
-            try {
-                const options = {caption: message.textContent || ''};
+      for (const message of messages) {
+          for (const user of users) {
+              try {
+                  const options = {caption: message.textContent || ''};
 
-                switch (message.messageType) {
-                    case 'voice':
-                        await bot.telegram.sendVoice(user.user_id, {source: message.filePath}, options);
-                        break;
-                    case 'video_note':
-                        await bot.telegram.sendVideoNote(user.user_id, {source: message.filePath}, options);
-                        break;
-                    case 'video':
-                        await bot.telegram.sendVideo(user.user_id, {source: message.filePath}, options);
-                        break;
-                    case 'audio':
-                        await bot.telegram.sendAudio(user.user_id, {source: message.filePath}, options);
-                        break;
-                    case 'photo':
-                        await bot.telegram.sendPhoto(user.user_id, {source: message.filePath}, options);
-                        break;
-                    case 'text':
-                        await bot.telegram.sendMessage(user.user_id, message.textContent);
-                        break;
-                    case 'location':
-                        await bot.telegram.sendLocation(user.user_id, message.location.latitude, message.location.longitude);
-                        break;
-                    case 'poll':
-                        await bot.telegram.sendPoll(user.user_id, message.pollQuestion, message.pollOptions);
-                        break;
-                    case 'document':
-                        await bot.telegram.sendDocument(user.user_id, {source: message.filePath}, options);
-                        break;
-                    default:
-                        console.error('Noma`lum media turi.');
-                }
+                  switch (message.messageType) {
+                      case 'voice':
+                          await bot.telegram.sendVoice(user.user_id, {source: message.filePath}, options);
+                          break;
+                      case 'video_note':
+                          await bot.telegram.sendVideoNote(user.user_id, {source: message.filePath}, options);
+                          break;
+                      case 'video':
+                          await bot.telegram.sendVideo(user.user_id, {source: message.filePath}, options);
+                          break;
+                      case 'audio':
+                          await bot.telegram.sendAudio(user.user_id, {source: message.filePath}, options);
+                          break;
+                      case 'photo':
+                          await bot.telegram.sendPhoto(user.user_id, {source: message.filePath}, options);
+                          break;
+                      case 'text':
+                          await bot.telegram.sendMessage(user.user_id, message.textContent);
+                          break;
+                      case 'location':
+                          await bot.telegram.sendLocation(user.user_id, message.location.latitude, message.location.longitude);
+                          break;
+                      case 'poll':
+                          await bot.telegram.sendPoll(user.user_id, message.pollQuestion, message.pollOptions);
+                          break;
+                      case 'document':
+                          await bot.telegram.sendDocument(user.user_id, {source: message.filePath}, options);
+                          break;
+                      default:
+                          console.error('Noma`lum media turi.');
+                  }
 
-            } catch (error) {
-                if (error.code === 403 && error.response.description === 'Forbidden: bot was blocked by the user') {
-                    console.log(`User ${user.user_id} has blocked the bot.`);
-                    await User.destroy({where: {user_id: user.user_id}});
-                    console.warn(`${user.user_id}/${user.user_name} o'chirildi!`)
-                } else {
-                    console.error(`Xabar yuborishda xatolik: ${user.user_id}`, error);
-                }
-            }
-        }
-        await Message.update({send: true}, {where: {id: message.id}});
-    }
+              } catch (error) {
+                  if (error.code === 403 && error.response.description === 'Forbidden: bot was blocked by the user') {
+                      console.log(`User ${user.user_id} has blocked the bot.`);
+                      await User.destroy({where: {user_id: user.user_id}});
+                      console.warn(`${user.user_id}/${user.user_name} o'chirildi!`)
+                  } else {
+                      console.error(`Xabar yuborishda xatolik: ${user.user_id}`, error);
+                  }
+              }
+          }
+          await Message.update({send: true}, {where: {id: message.id}});
+      }
+  } catch (e) {
+      console.error("Error sendScheduledMessages function: ", e)
+  }
 }
 
 async function saveMediaMessage(ctx, messageType, fileId = null, textContent = null, location = null, pollQuestion = null, pollOptions = null, filePath = null) {

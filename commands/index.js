@@ -1,12 +1,5 @@
 const dotenv = require('dotenv');
 dotenv.config();
-const db = require("../model");
-const {Telegraf} = require("telegraf");
-const Message = db.messages;
-const User = db.users;
-const { Sequelize } = require('sequelize');
-
-const clientBot = new Telegraf(process.env.BOT_TOKEN);
 
 async function setCommands(bot) {
     let commands = [
@@ -27,37 +20,4 @@ async function setCommands(bot) {
     }
 }
 
-async function handleSendAdsToUsers(ctx, pendingMessage) {
-
-    const users = await User.findAll({
-        where: {
-            role: "user"
-        }
-    });
-
-    const userIds = users.map(row => row.user_id);
-
-    for (const userId of userIds) {
-        try {
-            if (pendingMessage.message_type === 'text') {
-                console.error("text ga tushdi apandim")
-                await clientBot.telegram.sendMessage(userId, pendingMessage.message_id);
-            } else if (pendingMessage.message_type === 'photo') {
-                console.error("photo ga tushdi apandim")
-                await clientBot.telegram.sendPhoto(userId, pendingMessage.file_id);
-            } else if (pendingMessage.message_type === 'video') {
-                await clientBot.telegram.sendVideo(userId, pendingMessage.file_id);
-            } else if (pendingMessage.message_type === 'audio') {
-                await clientBot.telegram.sendAudio(userId, pendingMessage.file_id);
-            }
-        } catch (err) {
-            console.error(`Foydalanuvchi ${userId} ga xabar yuborishda xatolik: ${err.message}`);
-        }
-    }
-
-    ctx.reply("Reklama foydalanuvchilarga jo'natildi!")
-    pendingMessage.sent = true;
-    await pendingMessage.save();
-}
-
-module.exports = {setCommands, handleSendAdsToUsers}
+module.exports = {setCommands}

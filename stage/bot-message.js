@@ -37,50 +37,50 @@ module.exports = function (bot) {
 
     });
 
-    bot.on('voice', async (ctx) => {
+    bot.on('voice',ensureAuth(), async (ctx) => {
         const fileId = ctx.message.voice.file_id;
         await saveMediaMessage(ctx, 'voice', fileId);
     });
 
-    bot.on('video_note', async (ctx) => {
+    bot.on('video_note',ensureAuth(), async (ctx) => {
         const fileId = ctx.message.video_note.file_id;
         await saveMediaMessage(ctx, 'video_note', fileId);
     });
 
-    bot.on('video', async (ctx) => {
+    bot.on('video',ensureAuth(), async (ctx) => {
         const fileId = ctx.message.video.file_id;
         await saveMediaMessage(ctx, 'video', fileId);
     });
 
-    bot.on('audio', async (ctx) => {
+    bot.on('audio',ensureAuth(), async (ctx) => {
         const fileId = ctx.message.audio.file_id;
         await saveMediaMessage(ctx, 'audio', fileId);
     });
 
-    bot.on('photo', async (ctx) => {
+    bot.on('photo',ensureAuth(), async (ctx) => {
         const fileId = ctx.message.photo[ctx.message.photo.length - 1].file_id; // Eng yuqori sifatli rasmni olish
         const caption = ctx.message.caption;
         await saveMediaMessage(ctx, 'photo', fileId, caption);
     });
 
-    bot.on('text', async (ctx) => {
+    bot.on('text',ensureAuth(), async (ctx) => {
         const textContent = ctx.message.text;
         await saveMediaMessage(ctx, 'text', null, textContent);
     });
 
-    bot.on('location', async (ctx) => {
+    bot.on('location',ensureAuth(), async (ctx) => {
         const location = ctx.message.location;
         await saveMediaMessage(ctx, 'location', null, null, location);
     });
 
-    bot.on('poll', async (ctx) => {
+    bot.on('poll',ensureAuth(), async (ctx) => {
         const poll = ctx.message.poll;
         const pollQuestion = poll.question;
         const pollOptions = poll.options.map(option => option.text);
         await saveMediaMessage(ctx, 'poll', null, null, null, pollQuestion, pollOptions);
     });
 
-    bot.on('document', async (ctx) => {
+    bot.on('document',ensureAuth(), async (ctx) => {
         const fileId = ctx.message.document.file_id;
         const fileName = ctx.message.document.file_name;
         const caption = ctx.message.caption;
