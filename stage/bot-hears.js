@@ -7,23 +7,23 @@ const ensureAuth = require("../middleware/ensure-auth");
 const Message = db.messages;
 
 module.exports = function (bot) {
-    bot.hears('Guruh qo\'shish', ensureAuth(), (ctx) => {
+    bot.hears('Guruh qo\'shish ➕', ensureAuth(), (ctx) => {
         ctx.scene.enter('addGroupScene');
     });
 
-    bot.hears('Guruhlar ro\'yhati', ensureAuth(), getGroup);
+    bot.hears('Guruhlar ro\'yhati 🤔', ensureAuth(), getGroup);
 
-    bot.hears('Guruh o\'zgartirish', ensureAuth(), (ctx) => {
+    bot.hears('Guruh o\'zgartirish 🔄', ensureAuth(), (ctx) => {
         ctx.scene.enter('updateGroupScene');
     });
 
-    bot.hears('Guruh o\'chirish', ensureAuth(), (ctx) => {
+    bot.hears('Guruh o\'chirish 🗑', ensureAuth(), (ctx) => {
         ctx.scene.enter('deleteGroupScene');
     });
 
-    bot.hears('Kanallar ro\'yhati', ensureAuth(), getChannels);
+    bot.hears('Kanallar ro\'yhati 🤔', ensureAuth(), getChannels);
 
-    bot.hears('Kanal qo\'shish', ensureAuth(), (ctx) => {
+    bot.hears('Kanal qo\'shish ➕', ensureAuth(), (ctx) => {
         ctx.reply("Kanal qo'shishdan oldin, admin va client bot larni kanal admini qiling!")
         ctx.reply("O'zingizning kanalingizni ro'yhatdan tanlang ", Markup.keyboard([
             Markup.button.channelRequest("Tanlash", 1)
@@ -31,11 +31,11 @@ module.exports = function (bot) {
         // ctx.scene.enter('addChannelScene');
     });
 
-    bot.hears('Kanal o\'zgartirish', ensureAuth(), (ctx) => {
+    bot.hears('Kanal o\'zgartirish 🔄', ensureAuth(), (ctx) => {
         ctx.scene.enter('updateChannelScene');
     });
 
-    bot.hears('Kanal o\'chirish', ensureAuth(), (ctx) => {
+    bot.hears('Kanal o\'chirish 🗑', ensureAuth(), (ctx) => {
         ctx.scene.enter('deleteChannelScene');
     });
 
