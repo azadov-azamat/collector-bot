@@ -57,7 +57,8 @@ async function handleSubscriptionCheck(ctx, next) {
     const userId = ctx.from.id;
     const userName = ctx.from.username;
     const referrerId = ctx.startPayload;
-    const referralLink = `https://t.me/${ctx.botInfo.username}?start=${userId}`;
+
+    const referralLink = `tg://share?url=https://t.me/${ctx.botInfo.username}?start=${userId}&text=Ushbu link orqali siz ham ingliz tili marafonimizda qatnashing`;
 
     let buttons = [];
     let count;
@@ -151,7 +152,7 @@ async function handleSubscriptionCheck(ctx, next) {
         replyMessage += `Guruh havolasini olish uchun siz ${group.group_count} ta do'stingizni taklif qilishingiz kerak.\n`;
         buttons = [
             [
-                Markup.button.switchToChat("Siz uchun havola", referralLink)
+                Markup.button.url("Siz uchun havola", referralLink)
             ],
             [Markup.button.callback('Tekshirish ✅', 'check_subscription')]
         ]
@@ -168,7 +169,7 @@ async function handleSubscriptionCheck(ctx, next) {
 
         buttons = [
             ...buttons,
-            [Markup.button.switchToChat("Siz uchun havola", referralLink)],
+            [Markup.button.url("Siz uchun havola", referralLink)],
             [Markup.button.callback('Tekshirish ✅', 'check_subscription')]
         ]
     }
