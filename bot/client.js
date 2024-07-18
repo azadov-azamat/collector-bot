@@ -80,17 +80,17 @@ async function handleSubscriptionCheck(ctx, next) {
     }
 
     if (referrerId) {
-       if (!user) {
-           let refererCount = await Count.findOne({
-               where: {
-                   userId: BigInt(referrerId),
-                   groupId: group.id,
-               },
-           });
+        if (!user) {
+            let refererCount = await Count.findOne({
+                where: {
+                    userId: BigInt(referrerId),
+                    groupId: group.id,
+                },
+            });
 
-           refererCount.user_count = Number(refererCount.user_count) + 1;
-           await refererCount.save(); // Taklif qilgan user ning count ini oshirish
-       }
+            refererCount.user_count = Number(refererCount.user_count) + 1;
+            await refererCount.save(); // Taklif qilgan user ning count ini oshirish
+        }
     }
 
     try {
@@ -151,10 +151,7 @@ async function handleSubscriptionCheck(ctx, next) {
         replyMessage += `Guruh havolasini olish uchun siz ${group.group_count} ta do'stingizni taklif qilishingiz kerak.\n`;
         buttons = [
             [
-                {
-                    text: 'Siz uchun havola',
-                    switch_inline_query: `: ${referralLink}`,
-                }
+                Markup.button.switchToChat("Siz uchun havola", referralLink)
             ],
             [Markup.button.callback('Tekshirish ✅', 'check_subscription')]
         ]
@@ -171,12 +168,7 @@ async function handleSubscriptionCheck(ctx, next) {
 
         buttons = [
             ...buttons,
-            [
-                {
-                    text: 'Siz uchun havola',
-                    switch_inline_query: `: ${referralLink}`,
-                }
-            ],
+            [Markup.button.switchToChat("Siz uchun havola", referralLink)],
             [Markup.button.callback('Tekshirish ✅', 'check_subscription')]
         ]
     }
