@@ -1,7 +1,10 @@
-const {clearMediaDirectory, clearMessageTable} = require("../utils/functions");
+const {clearMediaDirectory, clearMessageTable, sendScheduledMessages} = require("../utils/functions");
 const db = require("../model");
 const ensureAuth = require("../middleware/ensure-auth");
+const {Telegraf} = require("telegraf");
 const Message = db.messages;
+
+const clientBot = new Telegraf(process.env.BOT_TOKEN);
 
 module.exports = function (bot) {
     bot.action('confirm_clear_all', ensureAuth(), async (ctx) => {
@@ -24,6 +27,7 @@ module.exports = function (bot) {
         await Message.update({status: true}, {where: {id: messageId}});
         await ctx.deleteMessage();
         ctx.reply('Xabar saqlandi.');
+        await sendScheduledMessages(clientBot);
     });
 
     bot.action(/reject_(\d+)/, ensureAuth(), async (ctx) => {

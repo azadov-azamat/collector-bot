@@ -3,8 +3,6 @@ dotenv.config();
 const db = require('../model');
 const {Telegraf, Markup} = require('telegraf');
 const LocalSession = require('telegraf-session-local');
-const {schedule} = require("node-cron");
-const {sendScheduledMessages} = require("../utils/functions");
 const {setClientCommands} = require("../commands");
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -54,9 +52,9 @@ bot.action('check_subscription', async (ctx) => {
 });
 
 async function handleSubscriptionCheck(ctx, next) {
-    const userId = ctx.from.id;
-    const userName = ctx.from.username;
-    const referrerId = ctx.startPayload;
+    const userId = ctx.from?.id;
+    const userName = ctx.from?.username;
+    const referrerId = ctx?.startPayload;
 
     const referralLink = `tg://share?url=https://t.me/${ctx.botInfo.username}?start=${userId}&text=Ushbu link orqali siz ham ingliz tili marafonimizda qatnashing`;
 
@@ -197,8 +195,6 @@ bot.use(async (ctx, next) => {
 bot.on(['text', 'photo', 'video'], async (ctx, next) => {
     await handleSubscriptionCheck(ctx, next);
 });
-
-schedule('*/5 * * * * *', async () => sendScheduledMessages(bot));
 
 bot.launch()
 
