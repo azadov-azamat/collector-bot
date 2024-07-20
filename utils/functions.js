@@ -328,11 +328,14 @@ async function handleSubscriptionCheck(bot, ctx, next = null, isStartCommand = f
     if (notSubscribedChannels.length === 0 && Number(count.user_count) >= group.group_count && memberCount >= group.group_count) {
         replyMessage = `Guruhimiz havolasi: ${group.group_link}`;
     } else if (notSubscribedChannels.length > 0 && Number(count.user_count) >= group.group_count) {
-        buttons = notSubscribedChannels.map((channel) => {
+        const filteredChannels = channels.filter(channel =>
+            notSubscribedChannels.some(usernameObj => usernameObj === channel.channel_link)
+        )
+        buttons = filteredChannels.map(({channel_name, channel_link}) => {
             return [
                 Markup.button.url(
-                    `Obuna bo'lish ${channel}`,
-                    `https://t.me/${channel.replace('@', '')}`
+                    channel_name,
+                    `https://t.me/${channel_link.replace('@', '')}`
                 ),
             ];
         });
@@ -349,11 +352,14 @@ async function handleSubscriptionCheck(bot, ctx, next = null, isStartCommand = f
             [Markup.button.callback('Tekshirish ✅', 'check_subscription')]
         ]
     } else {
-        buttons = notSubscribedChannels.map((channel) => {
+        const filteredChannels = channels.filter(channel =>
+            notSubscribedChannels.some(usernameObj => usernameObj === channel.channel_link)
+        )
+        buttons = filteredChannels.map(({channel_name, channel_link}) => {
             return [
                 Markup.button.url(
-                    `Obuna bo'lish ${channel}`,
-                    `https://t.me/${channel.replace('@', '')}`
+                    channel_name,
+                    `https://t.me/${channel_link.replace('@', '')}`
                 ),
             ];
         });
