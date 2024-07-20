@@ -366,7 +366,7 @@ async function handleSubscriptionCheck(bot, ctx, next = null, isStartCommand = f
     }
 
     if (!isStartCommand && !(notSubscribedChannels.length === 0 && Number(count.user_count) >= group.group_count)) {
-        replyMessage += `        \n
+        replyMessage += `\n
 📊 Statistika:
 Siz taklif qilgan umumiy do'stlar: ${count.user_count}
 Shartlarni to'liq bajargan do'stlar: ${memberCount}`
