@@ -238,8 +238,9 @@ async function handleSubscriptionCheck(bot, ctx, next = null, isStartCommand = f
     const userName = ctx.from?.username;
     const referrerId = ctx?.startPayload;
 
+    const referralLink = `https://t.me/share/url?url=https://t.me/${ctx.botInfo.username}?start=${userId}&text=Ushbu link orqali siz ham ingliz tili marafonimizda qatnashing`;
     // const referralLink = `tg://share?url=https://t.me/${ctx.botInfo.username}?start=${userId}&text=Ushbu link orqali siz ham ingliz tili marafonimizda qatnashing`;
-    const referralLink = `https://t.me/${ctx.botInfo.username}?start=${userId}`;
+    // const referralLink = `https://t.me/${ctx.botInfo.username}?start=${userId}`;
 
     let buttons = [];
     let count;
@@ -348,7 +349,7 @@ async function handleSubscriptionCheck(bot, ctx, next = null, isStartCommand = f
     } else if (notSubscribedChannels.length === 0 && Number(count.user_count) < group.group_count && memberCount < group.group_count) {
         buttons = [
             [
-                Markup.button.switchToChat("Siz uchun havola", referralLink)
+                Markup.button.url("Siz uchun havola", referralLink)
             ],
             [Markup.button.callback('Tekshirish ✅', 'check_subscription')]
         ]
@@ -367,7 +368,7 @@ async function handleSubscriptionCheck(bot, ctx, next = null, isStartCommand = f
 
         buttons = [
             ...buttons,
-            [Markup.button.switchToChat("Siz uchun havola", referralLink)],
+            [Markup.button.url("Siz uchun havola", referralLink)],
             [Markup.button.callback('Tekshirish ✅', 'check_subscription')]
         ]
     }
