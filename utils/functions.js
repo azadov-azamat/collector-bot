@@ -2,12 +2,19 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const db = require("../model");
-const Message = db.messages;
-const User = db.users;
+
 const {Markup} = require("telegraf");
 const axios = require("axios");
 const path = require('path');
 const fs = require('fs');
+
+const Channel = db.channels;
+const Group = db.groups;
+const Count = db.counts;
+const User = db.users;
+const Message = db.messages;
+
+const firstPhoto = path.join(__dirname, '../assets/photo-1.jpg');
 
 const mediaDir = path.join(__dirname, 'media');
 if (!fs.existsSync(mediaDir)) {
@@ -180,11 +187,219 @@ function messageTypes(type) {
     return messageText;
 }
 
+async function checkUserMembership(bot, ctx, userId, channels) {
+    const results = {};
+    for (const channel of channels) {
+        let chatMember
+
+        try {
+            chatMember = await bot.telegram.getChatMember(`@${channel}`, userId);
+        } catch (e) {
+            console.log("Error: ", e)
+            return ctx.reply("Muammo haqida xabar bering @Ramazon_Safarov: " + e);
+        }
+        if (chatMember) {
+            results[channel] = chatMember.status !== 'left';
+        }
+    }
+    return results;
+}
+
+async function checkUsersMembership(bot, users, channels) {
+    try {
+        let memberCount = 0;
+
+        for (const user of users) {
+            let chatMember
+            let subscribedChannelsCount = 0
+
+            for (const channel of channels) {
+
+                chatMember = await bot.telegram.getChatMember(`@${channel}`, user.user_id);
+
+                if (chatMember.status === 'member') {
+                    subscribedChannelsCount++;
+                }
+            }
+
+            if (subscribedChannelsCount === channels.length) {
+                memberCount++;
+            }
+        }
+
+        return memberCount;
+    } catch (error) {
+        console.error('Error checking membership:', error);
+    }
+}
+
+async function handleSubscriptionCheck(bot, ctx, next = null, isStartCommand = false) {
+    const userId = ctx.from?.id;
+    const userName = ctx.from?.username;
+    const referrerId = ctx?.startPayload;
+
+    const referralLink = `tg://share?url=https://t.me/${ctx.botInfo.username}?start=${userId}&text=Ushbu link orqali siz ham ingliz tili marafonimizda qatnashing`;
+
+    let buttons = [];
+    let count;
+    let referrerFriends = [];
+    let memberCount = 0;
+
+    const [group, channels, user] = await Promise.all([
+        Group.findOne({where: {group_status: true}}),
+        Channel.findAll({where: {channel_status: true}}),
+        User.findByPk(userId)
+    ]);
+
+    if (group) {
+        count = await Count.findOne({
+            where: {
+                userId: BigInt(userId),
+                groupId: group?.id,
+            },
+        });
+    } else {
+        return ctx.reply("Hozirda active guruhlarimiz yo'q!");
+    }
+
+    if (referrerId) {
+        if (!user) {
+            let refererCount = await Count.findOne({
+                where: {
+                    userId: BigInt(referrerId),
+                    groupId: group.id,
+                },
+            });
+
+            refererCount.user_count = Number(refererCount.user_count) + 1;
+            await refererCount.save();
+        }
+    }
+
+    try {
+        if (!user) {
+            let userCreateData = {
+                user_id: BigInt(userId),
+                user_name: userName,
+                user_link: referralLink,
+                role: 'user'
+            }
+
+            if (referrerId) {
+                userCreateData.invited_by = referrerId;
+            }
+
+            await User.create(userCreateData);
+        }
+    } catch (error) {
+        console.error('Error while creating user:', error);
+    }
+
+    referrerFriends = await User.findAll({where: {invited_by: BigInt(userId)}});
+
+    let currentCount = await Count.findOne({
+        where: {
+            userId: BigInt(userId),
+            groupId: group.id,
+        },
+    });
+
+    if (!currentCount) {
+        count = await Count.create({
+            user_count: 0,
+            userId: BigInt(userId),
+            groupId: group.id,
+        });
+    } else {
+        count = currentCount;
+    }
+
+    const channelUsernames = channels.map((channel) => channel.channel_link);
+
+    if (referrerFriends.length){
+        memberCount = await checkUsersMembership(bot, referrerFriends, channelUsernames);
+    }
+    const membership = await checkUserMembership(bot, ctx, userId, channelUsernames);
+
+    const notSubscribedChannels = Object.keys(membership).filter(channel => !membership[channel]);
+
+    let replyMessage = `Bepul AUTHENTIC past exam papers va listeninglarni qo'lga kiritish uchun ${group.group_count} ta yangi do'stingizni ushbu botga taklif qilishingiz va do'stlaringiz botda yozilgan kanallarga ulanishlari kerak.`;
+
+    if (notSubscribedChannels.length === 0 && Number(count.user_count) >= group.group_count && memberCount >= group.group_count) {
+        replyMessage = `Guruhimiz havolasi: ${group.group_link}`;
+    } else if (notSubscribedChannels.length > 0 && Number(count.user_count) >= group.group_count) {
+        buttons = notSubscribedChannels.map((channel) => {
+            return [
+                Markup.button.url(
+                    `Obuna bo'lish ${channel}`,
+                    `https://t.me/${channel.replace('@', '')}`
+                ),
+            ];
+        });
+        buttons.push(
+            [
+                Markup.button.callback('Tekshirish ✅', 'check_subscription')
+            ]
+        )
+    } else if (notSubscribedChannels.length === 0 && Number(count.user_count) < group.group_count && memberCount < group.group_count) {
+        buttons = [
+            [
+                Markup.button.url("Siz uchun havola", referralLink)
+            ],
+            [Markup.button.callback('Tekshirish ✅', 'check_subscription')]
+        ]
+    } else {
+        buttons = notSubscribedChannels.map((channel) => {
+            return [
+                Markup.button.url(
+                    `Obuna bo'lish ${channel}`,
+                    `https://t.me/${channel.replace('@', '')}`
+                ),
+            ];
+        });
+
+        buttons = [
+            ...buttons,
+            [Markup.button.url("Siz uchun havola", referralLink)],
+            [Markup.button.callback('Tekshirish ✅', 'check_subscription')]
+        ]
+    }
+
+    if (!isStartCommand && !(notSubscribedChannels.length === 0 && Number(count.user_count) >= group.group_count)) {
+        replyMessage += `        \n
+📊 Statistika:
+Siz taklif qilgan umumiy do'stlar: ${count.user_count}
+Shartlarni to'liq bajargan do'stlar: ${memberCount}`
+    }
+
+    if (next) {
+        next()
+    } else {
+        let message;
+        if (buttons.length > 0) {
+            message = isStartCommand
+                ?
+                await ctx.replyWithPhoto({source: firstPhoto}, {caption: replyMessage, ...Markup.inlineKeyboard(buttons)})
+                :
+                await ctx.reply(replyMessage, Markup.inlineKeyboard(buttons));
+        } else {
+            message = isStartCommand
+                ?
+                await ctx.replyWithPhoto({source: firstPhoto}, {caption: replyMessage})
+                :
+                await ctx.reply(replyMessage);
+        }
+
+        ctx.session.messageId = message.message_id;
+    }
+}
+
 module.exports = {
     sendScheduledMessages,
     saveMediaMessage,
     messageTypes,
     mediaDir,
     clearMediaDirectory,
-    clearMessageTable
+    clearMessageTable,
+    handleSubscriptionCheck
 }

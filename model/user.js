@@ -16,6 +16,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       unique: true,
     },
+    invited_by: {
+      type: DataTypes.BIGINT,
+    },
     role: {
       type: DataTypes.ENUM('user', 'admin'),
       defaultValue: 'user',
