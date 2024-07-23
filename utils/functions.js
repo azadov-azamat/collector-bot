@@ -239,8 +239,6 @@ async function handleSubscriptionCheck(bot, ctx, next = null, isStartCommand = f
     const referrerId = ctx?.startPayload;
 
     const referralLink = `https://t.me/share/url?url=https://t.me/${ctx.botInfo.username}?start=${userId}&text=Ushbu link orqali siz ham ingliz tili marafonimizda qatnashing`;
-    // const referralLink = `tg://share?url=https://t.me/${ctx.botInfo.username}?start=${userId}&text=Ushbu link orqali siz ham ingliz tili marafonimizda qatnashing`;
-    // const referralLink = `https://t.me/${ctx.botInfo.username}?start=${userId}`;
 
     let buttons = [];
     let count;
