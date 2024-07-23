@@ -318,7 +318,7 @@ async function handleSubscriptionCheck(bot, ctx, next = null, isStartCommand = f
 
     const channelUsernames = channels.map((channel) => channel.channel_link);
 
-    if (referrerFriends.length){
+    if (referrerFriends.length) {
         memberCount = await checkUsersMembership(bot, referrerFriends, channelUsernames);
     }
     const membership = await checkUserMembership(bot, ctx, userId, channelUsernames);
@@ -328,7 +328,12 @@ async function handleSubscriptionCheck(bot, ctx, next = null, isStartCommand = f
     let replyMessage = `Bepul AUTHENTIC past exam papers va listeninglarni qo'lga kiritish uchun ${group.group_count} ta yangi do'stingizni ushbu botga taklif qilishingiz va do'stlaringiz botda yozilgan kanallarga ulanishlari kerak.`;
 
     if (notSubscribedChannels.length === 0 && Number(count.user_count) >= group.group_count && memberCount >= group.group_count) {
-        replyMessage = `Guruhimiz havolasi: ${group.group_link}`;
+        replyMessage = `Tabriklaymiz shartlarni to\'liq bajardingiz`;
+        buttons = [
+            [
+                Markup.button.url('Guruh havolasi', group.group_link)
+            ]
+        ]
     } else if (notSubscribedChannels.length > 0 && Number(count.user_count) >= group.group_count) {
         const filteredChannels = channels.filter(channel =>
             notSubscribedChannels.some(usernameObj => usernameObj === channel.channel_link)
@@ -373,7 +378,7 @@ async function handleSubscriptionCheck(bot, ctx, next = null, isStartCommand = f
         ]
     }
 
-    if (!isStartCommand && !(notSubscribedChannels.length === 0 && Number(count.user_count) >= group.group_count)) {
+    if (!isStartCommand && !(notSubscribedChannels.length === 0 && Number(count.user_count) >= group.group_count) || memberCount < group.group_count) {
         replyMessage += `\n
 📊 Statistika:
 Siz taklif qilgan umumiy do'stlar: ${count.user_count}
@@ -387,15 +392,20 @@ Shartlarni to'liq bajargan do'stlar: ${memberCount}`
         if (buttons.length > 0) {
             message = isStartCommand
                 ?
-                await ctx.replyWithPhoto({source: firstPhoto}, {caption: replyMessage, ...Markup.inlineKeyboard(buttons)})
+                await ctx.replyWithPhoto({source: firstPhoto}, {
+                    caption: replyMessage,
+                    protect_content: true, ...Markup.inlineKeyboard(buttons)
+                })
                 :
-                await ctx.reply(replyMessage, Markup.inlineKeyboard(buttons));
+                await ctx.reply(replyMessage, {protect_content: true, ...Markup.inlineKeyboard(buttons)});
         } else {
             message = isStartCommand
                 ?
-                await ctx.replyWithPhoto({source: firstPhoto}, {caption: replyMessage})
+                await ctx.replyWithPhoto({source: firstPhoto}, {caption: replyMessage, protect_content: true})
                 :
-                await ctx.reply(replyMessage);
+                await ctx.reply(replyMessage, {
+                    protect_content: true
+                });
         }
 
         ctx.session.messageId = message.message_id;
